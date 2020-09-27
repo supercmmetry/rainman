@@ -72,5 +72,22 @@ TEST(MemoryTest, rain_man_child_tree_1) {
     child1->wipe();
 
     ASSERT_EQ(mgr->get_alloc_size(), 0);
-}
 
+    child2->r_malloc<char>(100);
+
+    ASSERT_EQ(mgr->get_alloc_count(), 1);
+
+    child1->r_malloc<char>(100);
+    child1_1 = child1->create_child_mgr();
+
+    child1_1->r_malloc<char>(100);
+
+    ASSERT_EQ(mgr->get_alloc_count(), 3);
+    ASSERT_EQ(child1->get_alloc_count(), 2);
+
+    child2->wipe();
+
+    ASSERT_EQ(mgr->get_alloc_count(), 2);
+    ASSERT_EQ(child1->get_alloc_count(), 2);
+
+}
