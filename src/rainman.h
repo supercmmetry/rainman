@@ -12,6 +12,8 @@
 #define R_MEM_INIT_FROM_PTR(mgr, child) child->_rain_man_memmgr_attach_memmgr(mgr)
 #define R_MEM_MGR this->_rain_man_memmgr_obj
 #define R_MEM_MGR_FROM(obj) obj->_rain_man_memmgr_obj
+#define R_CHILD_MGR this->_rain_man_mem_obj->create_child_mgr()
+#define R_WIPE_MGR this->_rain_man_mem_obj->wipe()
 
 // Memory interface for using R_MALLOC and R_FREE more idiomatically.
 class rain_man_iface {

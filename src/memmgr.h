@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <semaphore.h>
+#include <vector>
 #include "errors.h"
 #include "memmap.h"
 
@@ -14,14 +15,15 @@ private:
     uint64_t peak_size;
     rain_man_memmap *memmap;
     rain_man_mgr *parent;
-    sem_t mutex;
+    std::vector<rain_man_mgr*> children;
+    sem_t mutex{};
 
     void lock();
 
     void unlock();
 
 public:
-    rain_man_mgr();
+    rain_man_mgr(uint64_t map_size = 0xffff);
 
     ~rain_man_mgr() {
         sem_wait(&mutex);
@@ -102,8 +104,13 @@ public:
 
     uint64_t get_peak_size();
 
+    rain_man_mgr *create_child_mgr();
+
     void update(uint64_t alloc_size, uint64_t alloc_count);
 
+    // De-allocate everything allocated by the memory manager.
+    // All child memory-managers are wiped in the process.
+    // Note that this does not call the destructor of the allocated objects.
     void wipe();
 };
 

@@ -1,8 +1,8 @@
 #include "memmgr.h"
 
-rain_man_mgr::rain_man_mgr() {
+rain_man_mgr::rain_man_mgr(uint64_t map_size) {
     sem_init(&mutex, 0, 1);
-    memmap = new rain_man_memmap(0xFFFF);
+    memmap = new rain_man_memmap(map_size);
     n_allocations = 0;
     allocation_size = 0;
     peak_size = 0;
@@ -12,8 +12,13 @@ rain_man_mgr::rain_man_mgr() {
 void rain_man_mgr::set_peak(uint64_t _peak_size) {
     lock();
     peak_size = _peak_size;
-    unlock();
 
+    if (allocation_size > peak_size) {
+        unlock();
+        throw MemoryErrors::PeakLimitReachedException();
+    }
+
+    unlock();
 }
 
 uint64_t rain_man_mgr::get_alloc_count() {
@@ -62,5 +67,22 @@ void rain_man_mgr::unlock() {
 }
 
 void rain_man_mgr::wipe() {
+    memmap->clear();
+    for (auto & child : children) {
+        child->wipe();
+        child->~rain_man_mgr();
+    }
 
+    children.clear();
+}
+
+rain_man_mgr *rain_man_mgr::create_child_mgr() {
+    auto *mgr = new rain_man_mgr;
+    mgr->parent = this;
+
+    lock();
+    children.push_back(mgr);
+    unlock();
+
+    return mgr;
 }

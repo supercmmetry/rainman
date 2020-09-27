@@ -46,3 +46,12 @@ uint64_t rain_man_memmap::hash(void *ptr) {
     return value % max_size;
 }
 
+void rain_man_memmap::clear() {
+    auto *curr = head;
+    while (curr != nullptr) {
+        auto next = curr->next_iter;
+        remove_by_type(curr->ptr);
+        curr = next;
+    }
+}
+

@@ -68,6 +68,8 @@ public:
 
         delete curr;
     }
+
+    void clear();
 };
 
 #endif
