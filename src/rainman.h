@@ -44,6 +44,7 @@ namespace rainman {
         pointer() {
             ptr = new Type;
             rc = new uint64_t;
+            *rc = 0;
             mutex = new sem_t;
             sem_init(mutex, 0, 1);
         };
@@ -52,6 +53,7 @@ namespace rainman {
             _rain_man_memmgr_obj = mgr;
             ptr = R_NEW(Type);
             rc = R_NEW(uint64_t);
+            *rc = 0;
             mutex = R_NEW(sem_t);
             sem_init(mutex, 0, 1);
         }
@@ -59,6 +61,7 @@ namespace rainman {
         pointer(Type *ptr) {
             this->ptr = ptr;
             rc = new uint64_t;
+            *rc = 0;
             mutex = new sem_t;
             sem_init(mutex, 0, 1);
         }
@@ -67,38 +70,41 @@ namespace rainman {
             this->ptr = ptr;
             _rain_man_memmgr_obj = mgr;
             rc = R_NEW(uint64_t);
+            *rc = 0;
             mutex = R_NEW(sem_t);
             sem_init(mutex, 0, 1);
         }
 
         pointer(const pointer<Type> &copy) {
-            uint64_t mrc;
+            if (mutex != nullptr) {
+                uint64_t mrc;
 
-            sem_wait(mutex);
-            mrc = *rc;
-            if (*rc == 0) {
-                if (_rain_man_memmgr_obj != nullptr) {
-                    R_FREE(ptr);
-                    R_FREE(rc);
+                sem_wait(mutex);
+                mrc = *rc;
+                if (*rc == 0) {
+                    if (_rain_man_memmgr_obj != nullptr) {
+                        R_FREE(ptr);
+                        R_FREE(rc);
+                    } else {
+                        delete[] ptr;
+                        delete rc;
+                    }
                 } else {
-                    delete[] ptr;
-                    delete rc;
+                    (*rc)--;
                 }
-            } else {
-                (*rc)--;
+
+                sem_post(mutex);
+
+                if (!mrc) {
+                    if (_rain_man_memmgr_obj != nullptr) {
+                        R_FREE(mutex);
+                    } else {
+                        delete mutex;
+                    }
+                }
             }
 
-            sem_post(mutex);
-
-            if (!mrc) {
-                if (_rain_man_memmgr_obj != nullptr) {
-                    R_FREE(mutex);
-                } else {
-                    delete mutex;
-                }
-            }
-
-            ptr = copy;
+            ptr = copy.ptr;
             _rain_man_memmgr_obj = copy._rain_man_memmgr_obj;
             mutex = copy.mutex;
             rc = copy.rc;
@@ -106,8 +112,6 @@ namespace rainman {
             sem_wait(mutex);
             (*rc)++;
             sem_post(mutex);
-
-            return *this;
         }
 
         pointer &operator=(const pointer<Type> &rvalue) {
@@ -115,33 +119,35 @@ namespace rainman {
                 return *this;
             }
 
-            uint64_t mrc;
+            if (mutex != nullptr) {
+                uint64_t mrc;
 
-            sem_wait(mutex);
-            mrc = *rc;
-            if (*rc == 0) {
-                if (_rain_man_memmgr_obj != nullptr) {
-                    R_FREE(ptr);
-                    R_FREE(rc);
+                sem_wait(mutex);
+                mrc = *rc;
+                if (*rc == 0) {
+                    if (_rain_man_memmgr_obj != nullptr) {
+                        R_FREE(ptr);
+                        R_FREE(rc);
+                    } else {
+                        delete[] ptr;
+                        delete rc;
+                    }
                 } else {
-                    delete[] ptr;
-                    delete rc;
+                    (*rc)--;
                 }
-            } else {
-                (*rc)--;
+
+                sem_post(mutex);
+
+                if (!mrc) {
+                    if (_rain_man_memmgr_obj != nullptr) {
+                        R_FREE(mutex);
+                    } else {
+                        delete mutex;
+                    }
+                }
             }
 
-            sem_post(mutex);
-
-            if (!mrc) {
-                if (_rain_man_memmgr_obj != nullptr) {
-                    R_FREE(mutex);
-                } else {
-                    delete mutex;
-                }
-            }
-
-            ptr = rvalue;
+            ptr = rvalue.ptr;
             _rain_man_memmgr_obj = rvalue._rain_man_memmgr_obj;
             mutex = rvalue.mutex;
             rc = rvalue.rc;
@@ -159,6 +165,10 @@ namespace rainman {
 
         Type &operator*() {
             return *ptr;
+        }
+
+        Type &operator[](int i) {
+            return ptr[i];
         }
 
         ~pointer() {

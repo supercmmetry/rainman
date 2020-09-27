@@ -154,8 +154,46 @@ private:
             // We wrap 'another_array' in a rainman smart pointer.
             // This automatically de-allocates 'another_array' when smart_ptr
             // goes out of scope.
+            // The memory manager is automatically attached.
 
-            auto smart_ptr = R_PTR(another_array);
+            auto sptr = R_PTR(another_array);
+
+            // Also supports reference-counting.
+            {
+                auto dptr = sptr;
+            }
+
+            // Operator overload for subscripting
+            sptr[0] = 100;
+
+            // In addition to this, you can also create smart pointers directly from types.
+
+            auto number = R_PTR_T(double);
+
+            *number = 123.456;
+
+            std::cout << "Number: " << *number << std::endl;
+
+            // Last but not the least, these smart-pointers are thread-safe.
+            // However, this does not mean that the underlying pointer is thread-safe!
+
+            std::vector<std::thread*> threads;
+
+            for (int i = 0; i < 10; i++) {
+                auto thread = new std::thread([&sptr, i]() {
+                   sptr[i] = i;
+                });
+
+                threads.push_back(thread);
+            }
+
+            for (auto &thread : threads) {
+                thread->join();
+            }
+
+            for (int i = 0; i < 10; i++) {
+                std::cout << "sptr[" << i << "] = " << sptr[i] << std::endl;
+            }
 
         }
     };
@@ -163,11 +201,10 @@ private:
 
 public:
     void run() {
-        // Allocate primitives using rainman macros
-        int *array = R_MALLOC(int, 100);
-
         // Allocate objects using rainman macros
         SubClass *obj = R_NEW(SubClass);
+
+        std::cout << "--- Start example 3 ---" << std::endl;
 
         // Attach RainMan1's memory manager to 'obj'.
         R_MEM_INIT_PTR(obj);
@@ -185,7 +222,7 @@ public:
 
         auto mgr = R_MEM_MGR; // Gets the memory manager in the current context.
 
-        std::cout << "--- Start example 3 ---" << std::endl;
+
         std::cout << "Allocation size in bytes: " << mgr->get_alloc_size() << std::endl;
         std::cout << "Allocation count        : " << mgr->get_alloc_count() << std::endl;
         std::cout << "--- End example 3 ---" << std::endl;
