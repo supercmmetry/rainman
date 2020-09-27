@@ -15,6 +15,7 @@ void rainman::memmap::add(map_elem *elem) {
     uint64_t ptr_hash = hash(elem->ptr);
     elem->next = mapptr[ptr_hash];
     mapptr[ptr_hash] = elem;
+    elem->next = nullptr;
 
     if (iterptr == nullptr) {
         iterptr = elem;
@@ -35,6 +36,10 @@ rainman::map_elem *rainman::memmap::get(void *ptr) {
 
     while (curr != nullptr && curr->ptr != ptr) {
         curr = curr->next;
+    }
+
+    if (curr->ptr != ptr) {
+        return nullptr;
     }
 
     return curr;
