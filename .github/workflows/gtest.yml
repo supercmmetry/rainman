@@ -1,0 +1,27 @@
+name: build
+on:
+  push:
+    branches:
+      - master
+
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout-repo
+        uses: actions/checkout@v1
+
+      - name: Install clang
+        run: sudo apt-get update && sudo apt-get install clang
+
+      - name: Compile tests
+        run: |
+          cmake -DCMAKE_CXX_COMPILER=clang++ .
+          make gtest_run
+
+      - name: Run tests
+        run: bin/gtest_run
