@@ -156,19 +156,32 @@ private:
             // goes out of scope.
             // The memory manager is automatically attached.
 
-            auto sptr = R_PTR(another_array);
+            auto sptr = rainptr(another_array);
+
+            // If you are not inheriting rainman::context, then you can create a smart pointer like this.
+            // But the memory manager needs to be attached manually.
+            auto another_sptr = rainman::pointer<int>(R_MEM_MGR);
+
+            // NOTE: It is unsafe to create more than one smart pointer wrapping a single pointer. This breaks the
+            // reference-counting mechanism and can lead to unnecessary de-allocations leading to a classic
+            // segmentation fault. To create more smart pointers wrapping the same pointer,
+            // please use the copy constructor.
 
             // Also supports reference-counting.
             {
                 auto dptr = sptr;
             }
 
+            // Create an array pointer wrapped with smart pointer in one line.
+
+            sptr = rainptr_m(int, 10);
+
             // Operator overload for subscripting
             sptr[0] = 100;
 
             // In addition to this, you can also create smart pointers directly from types.
 
-            auto number = R_PTR_T(double);
+            auto number = rainptr_t(double);
 
             *number = 123.456;
 

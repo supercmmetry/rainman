@@ -14,8 +14,9 @@
 #define R_MEM_MGR_FROM(obj) obj->_rain_man_memmgr_obj
 #define R_CHILD_MGR this->_rain_man_memmgr_obj->create_child_mgr()
 #define R_WIPE_MGR this->_rain_man_memmgr_obj->wipe()
-#define R_PTR_T(type) rainman::pointer<type>(this->_rain_man_memmgr_obj)
-#define R_PTR(ptr) rainman::pointer(ptr, this->_rain_man_memmgr_obj)
+#define rainptr_t(type) rainman::pointer<type>(this->_rain_man_memmgr_obj)
+#define rainptr(ptr) rainman::pointer(ptr, this->_rain_man_memmgr_obj)
+#define rainptr_m(type, n_elems) rainman::pointer(this->_rain_man_memmgr_obj->template r_malloc<type>(n_elems), this->_rain_man_memmgr_obj)
 
 namespace rainman {
     // Memory context for using R_MALLOC and R_FREE more idiomatically.
