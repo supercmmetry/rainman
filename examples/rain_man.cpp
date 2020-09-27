@@ -64,6 +64,10 @@ private:
     public:
         void run() {
             int *another_array = R_MALLOC(int, 100);
+            int *some_array = R_MALLOC(int, 200);
+
+            // You can also free memory like this.
+            R_FREE(some_array);
         }
 
         ~SubClass() {
@@ -80,6 +84,8 @@ public:
         // Now we run an instance of SubClass in multiple threads.
         // Here, we use separate memory managers for each thread so
         // that we can wipe them safely.
+
+        std::cout << "--- Start example 2 ---" << std::endl;
 
         std::vector<std::thread *> threads;
         for (int i = 0; i < 10; i++) {
@@ -101,6 +107,8 @@ public:
 
                         obj->run();
 
+                        // Since, the wipe() method does not call the destructor of the object,
+                        // we use R_FREE() to free any memory allocated for 'obj' and also call it's destructor.
                         R_FREE(obj);
                     }
             );
@@ -114,7 +122,6 @@ public:
         }
 
         // Now, we view the allocations under the parent memory manager i.e. (R_MEM_MGR).
-        std::cout << "--- Start example 2 ---" << std::endl;
         std::cout << "Allocation size in bytes: " << R_MEM_MGR->get_alloc_size() << std::endl;
         std::cout << "Allocation count        : " << R_MEM_MGR->get_alloc_count() << std::endl;
 
@@ -134,6 +141,54 @@ public:
         std::cout << "Allocation count        : " << R_MEM_MGR->get_alloc_count() << std::endl;
 
         std::cout << "--- End example 2 ---" << std::endl;
+    }
+};
+
+class RainMan3 : public rainman::context {
+private:
+    class SubClass : public rainman::context {
+    public:
+        void run() {
+            int *another_array = R_MALLOC(int, 100);
+
+            // We wrap 'another_array' in a rainman smart pointer.
+            // This automatically de-allocates 'another_array' when smart_ptr
+            // goes out of scope.
+
+            auto smart_ptr = R_PTR(another_array);
+
+        }
+    };
+
+
+public:
+    void run() {
+        // Allocate primitives using rainman macros
+        int *array = R_MALLOC(int, 100);
+
+        // Allocate objects using rainman macros
+        SubClass *obj = R_NEW(SubClass);
+
+        // Attach RainMan1's memory manager to 'obj'.
+        R_MEM_INIT_PTR(obj);
+
+        /*
+         * If you need to attach a memory manager to a non-pointer type use R_MEM_INIT.
+         */
+
+        obj->run();
+        R_FREE(obj);
+
+        // View allocation information
+        // Notice that the stuff allocated inside obj->run() was de-allocated without
+        // any manual intervention.
+
+        auto mgr = R_MEM_MGR; // Gets the memory manager in the current context.
+
+        std::cout << "--- Start example 3 ---" << std::endl;
+        std::cout << "Allocation size in bytes: " << mgr->get_alloc_size() << std::endl;
+        std::cout << "Allocation count        : " << mgr->get_alloc_count() << std::endl;
+        std::cout << "--- End example 3 ---" << std::endl;
     }
 };
 
@@ -159,5 +214,16 @@ int main() {
     example2.run();
 
     // Wipe all allocated memory in example2
+    mgr->wipe();
+
+    auto example3 = RainMan3();
+
+    // Attach 'mgr' to 'example3'
+    R_MEM_INIT_FROM(mgr, example3);
+
+    // Run example3
+    example3.run();
+
+    // Wipe all allocated memory in example3
     mgr->wipe();
 }
