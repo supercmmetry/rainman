@@ -153,6 +153,14 @@ namespace rainman {
             return *this;
         }
 
+        Type *operator->() {
+            return ptr;
+        }
+
+        Type &operator*() {
+            return *ptr;
+        }
+
         ~pointer() {
             uint64_t mrc;
 
