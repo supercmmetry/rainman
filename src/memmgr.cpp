@@ -1,15 +1,15 @@
 #include "memmgr.h"
 
-rain_man_mgr::rain_man_mgr(uint64_t map_size) {
+rainman::memmgr::memmgr(uint64_t map_size) {
     sem_init(&mutex, 0, 1);
-    memmap = new rain_man_memmap(map_size);
+    memmap = new rainman::memmap(map_size);
     n_allocations = 0;
     allocation_size = 0;
     peak_size = 0;
     parent = nullptr;
 }
 
-void rain_man_mgr::set_peak(uint64_t _peak_size) {
+void rainman::memmgr::set_peak(uint64_t _peak_size) {
     lock();
     peak_size = _peak_size;
 
@@ -21,7 +21,7 @@ void rain_man_mgr::set_peak(uint64_t _peak_size) {
     unlock();
 }
 
-uint64_t rain_man_mgr::get_alloc_count() {
+uint64_t rainman::memmgr::get_alloc_count() {
     lock();
     int n = n_allocations;
     unlock();
@@ -29,7 +29,7 @@ uint64_t rain_man_mgr::get_alloc_count() {
     return n;
 }
 
-uint64_t rain_man_mgr::get_alloc_size() {
+uint64_t rainman::memmgr::get_alloc_size() {
     lock();
     int size = allocation_size;
     unlock();
@@ -37,11 +37,11 @@ uint64_t rain_man_mgr::get_alloc_size() {
     return size;
 }
 
-void rain_man_mgr::set_parent(rain_man_mgr *p) {
+void rainman::memmgr::set_parent(rainman::memmgr *p) {
     parent = p;
 }
 
-uint64_t rain_man_mgr::get_peak_size() {
+uint64_t rainman::memmgr::get_peak_size() {
     lock();
     int size = peak_size;
     unlock();
@@ -49,35 +49,61 @@ uint64_t rain_man_mgr::get_peak_size() {
     return size;
 }
 
-void rain_man_mgr::update(uint64_t alloc_size, uint64_t alloc_count) {
-    lock();
+void rainman::memmgr::update(uint64_t alloc_size, uint64_t alloc_count) {
+    if (parent != nullptr) {
+        parent->lock();
+        parent->update(parent->allocation_size + alloc_size - allocation_size,
+                       parent->n_allocations + alloc_count - n_allocations);
+        parent->unlock();
+    }
 
     allocation_size = alloc_size;
     n_allocations = alloc_count;
-
-    unlock();
 }
 
-void rain_man_mgr::lock() {
+void rainman::memmgr::lock() {
     sem_wait(&mutex);
 }
 
-void rain_man_mgr::unlock() {
+void rainman::memmgr::unlock() {
     sem_post(&mutex);
 }
 
-void rain_man_mgr::wipe() {
-    memmap->clear();
-    for (auto & child : children) {
-        child->wipe();
-        child->~rain_man_mgr();
+void rainman::memmgr::wipe(bool wipe_children) {
+    lock();
+
+    auto *curr = memmap->head;
+    while (curr != nullptr) {
+        auto next = curr->next_iter;
+        auto ptr = curr->ptr;
+        if (ptr == nullptr) {
+            curr = next;
+            continue;
+        }
+
+        auto *elem =  memmap->get((void *) ptr);
+        if (elem != nullptr) {
+            update(allocation_size - elem->alloc_size, n_allocations - 1);
+            memmap->remove_by_type(ptr);
+        }
+
+        curr = next;
     }
 
-    children.clear();
+    unlock();
+
+    if (wipe_children) {
+        for (auto &child : children) {
+            child->wipe();
+            child->~memmgr();
+        }
+
+        children.clear();
+    }
 }
 
-rain_man_mgr *rain_man_mgr::create_child_mgr() {
-    auto *mgr = new rain_man_mgr;
+rainman::memmgr *rainman::memmgr::create_child_mgr() {
+    auto *mgr = new rainman::memmgr;
     mgr->parent = this;
 
     lock();

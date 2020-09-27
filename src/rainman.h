@@ -16,17 +16,21 @@
 #define R_WIPE_MGR this->_rain_man_mem_obj->wipe()
 
 // Memory interface for using R_MALLOC and R_FREE more idiomatically.
-class rain_man_iface {
-public:
-    rain_man_mgr *_rain_man_memmgr_obj;
+namespace rainman {
+    class interface {
+    public:
+        rain_man_mgr *_rain_man_memmgr_obj;
 
-    rain_man_iface() {
-        _rain_man_memmgr_obj = nullptr;
-    }
+        interface() {
+            _rain_man_memmgr_obj = nullptr;
+        }
 
-    void _rain_man_memmgr_attach_memmgr(rain_man_mgr *mgr) {
-        _rain_man_memmgr_obj = mgr;
-    }
-};
+        void _rain_man_memmgr_attach_memmgr(rain_man_mgr *mgr) {
+            _rain_man_memmgr_obj = mgr;
+        }
+    };
+}
+
+
 
 #endif

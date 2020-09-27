@@ -1,8 +1,8 @@
 #include <iostream>
 #include "memmap.h"
 
-rain_man_memmap::rain_man_memmap(uint64_t size) {
-    mapptr =  new rain_man_map_elem*[size];
+rainman::memmap::memmap(uint64_t size) {
+    mapptr =  new map_elem*[size];
     for (int i = 0; i < size; i++) {
         mapptr[i] = nullptr;
     }
@@ -11,7 +11,7 @@ rain_man_memmap::rain_man_memmap(uint64_t size) {
     iterptr = nullptr;
 }
 
-void rain_man_memmap::add(rain_man_map_elem *elem) {
+void rainman::memmap::add(map_elem *elem) {
     uint64_t ptr_hash = hash(elem->ptr);
     elem->next = mapptr[ptr_hash];
     mapptr[ptr_hash] = elem;
@@ -29,7 +29,7 @@ void rain_man_memmap::add(rain_man_map_elem *elem) {
     }
 }
 
-rain_man_map_elem *rain_man_memmap::get(void *ptr) {
+rainman::map_elem *rainman::memmap::get(void *ptr) {
     uint64_t ptr_hash = hash(ptr);
     auto curr = mapptr[ptr_hash];
 
@@ -40,18 +40,9 @@ rain_man_map_elem *rain_man_memmap::get(void *ptr) {
     return curr;
 }
 
-uint64_t rain_man_memmap::hash(void *ptr) {
+uint64_t rainman::memmap::hash(void *ptr) {
     auto value = (uint64_t) ptr;
     value = value + value ^ (value >> 2);
     return value % max_size;
-}
-
-void rain_man_memmap::clear() {
-    auto *curr = head;
-    while (curr != nullptr) {
-        auto next = curr->next_iter;
-        remove_by_type(curr->ptr);
-        curr = next;
-    }
 }
 
