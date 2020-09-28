@@ -31,8 +31,7 @@ TEST(MemoryTest, rain_man_wipe) {
     std::vector<int*> ptr_vec;
 
     for (int i = 0; i < 2000; i++) {
-        auto x = mgr->r_malloc<int>(20);
-        ptr_vec.push_back(x);
+        mgr->r_malloc<int>(20);
     }
 
     mgr->wipe();
@@ -40,7 +39,7 @@ TEST(MemoryTest, rain_man_wipe) {
     ASSERT_EQ(mgr->get_alloc_count(), 0);
     ASSERT_EQ(mgr->get_alloc_size(), 0);
 
-    for (int i = 0; i < 2000; i++) {
+    for (int i = 0; i < 10; i++) {
         auto ptr = mgr->r_malloc<int>(20);
         ptr_vec.push_back(ptr);
     }
