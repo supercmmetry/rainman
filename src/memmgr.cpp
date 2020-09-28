@@ -69,39 +69,6 @@ void rainman::memmgr::unlock() {
     sem_post(&mutex);
 }
 
-void rainman::memmgr::wipe(bool wipe_children) {
-    lock();
-
-    auto *curr = memmap->head;
-    while (curr != nullptr) {
-        auto next = curr->next_iter;
-        auto ptr = curr->ptr;
-        if (ptr == nullptr) {
-            curr = next;
-            continue;
-        }
-
-        auto *elem =  memmap->get((void *) ptr);
-        if (elem != nullptr) {
-            update(allocation_size - elem->alloc_size, n_allocations - 1);
-            memmap->remove_by_type(ptr);
-        }
-
-        curr = next;
-    }
-
-    unlock();
-
-    if (wipe_children) {
-        for (auto &child : children) {
-            child->wipe();
-            child->~memmgr();
-        }
-
-        children.clear();
-    }
-}
-
 rainman::memmgr *rainman::memmgr::create_child_mgr() {
     auto *mgr = new rainman::memmgr;
     mgr->parent = this;

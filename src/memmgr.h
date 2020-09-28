@@ -2,8 +2,10 @@
 #define HYBRIDZIP_MEMMGR_H
 
 #include <cstdint>
+#include <cstring>
 #include <semaphore.h>
 #include <vector>
+#include <typeinfo>
 #include "errors.h"
 #include "memmap.h"
 
@@ -15,7 +17,7 @@ namespace rainman {
         uint64_t peak_size;
         memmap *memmap;
         memmgr *parent;
-        std::vector<memmgr*> children;
+        std::vector<memmgr *> children;
         sem_t mutex{};
 
         void lock();
@@ -57,6 +59,7 @@ namespace rainman {
 
             elem->ptr = new Type[n_elems];
             elem->alloc_size = n_elems * sizeof(Type);
+            elem->type_name = typeid(Type).name();
             elem->next = nullptr;
 
             memmap->add(elem);
@@ -76,7 +79,7 @@ namespace rainman {
 
             lock();
 
-            auto *elem =  memmap->get((void *) ptr);
+            auto *elem = memmap->get((void *) ptr);
             if (elem != nullptr) {
                 update(allocation_size - elem->alloc_size, n_allocations - 1);
                 memmap->remove_by_type<Type>(ptr);
@@ -100,7 +103,44 @@ namespace rainman {
         // De-allocate everything allocated by the memory manager.
         // All child memory-managers are wiped in the process.
         // Note that this does not call the destructor of the allocated objects.
-        void wipe(bool wipe_children = true);
+        template<typename Type>
+        void wipe(bool wipe_children = true) {
+            lock();
+
+            auto *curr = memmap->head;
+            while (curr != nullptr) {
+                auto next = curr->next_iter;
+                auto ptr = curr->ptr;
+                if (ptr == nullptr) {
+                    curr = next;
+                    continue;
+                }
+
+                auto *elem = memmap->get((void *) ptr);
+                if (elem != nullptr) {
+                    if (strcmp(typeid(Type).name(), typeid(void).name()) == 0) {
+                        update(allocation_size - elem->alloc_size, n_allocations - 1);
+                        memmap->remove_by_type<void*>(ptr);
+                    } else if (strcmp(typeid(Type).name(), elem->type_name) == 0) {
+                        update(allocation_size - elem->alloc_size, n_allocations - 1);
+                        memmap->remove_by_type<Type*>((Type*)ptr);
+                    }
+                }
+
+                curr = next;
+            }
+
+            unlock();
+
+            if (wipe_children) {
+                for (auto &child : children) {
+                    child->wipe<Type>();
+                    delete child;
+                }
+
+                children.clear();
+            }
+        }
     };
 }
 

@@ -3,23 +3,24 @@
 
 #include "memmgr.h"
 
-#define R_MALLOC(type, n_elems) this->_rain_man_memmgr_obj->template r_malloc<type>(n_elems)
-#define R_NEW(type) this->_rain_man_memmgr_obj->template r_malloc<type>(1)
-#define R_FREE(ptr) this->_rain_man_memmgr_obj->template r_free<typeof ptr>(ptr)
-#define R_MEM_INIT(child) child._rain_man_memmgr_attach_memmgr(this->_rain_man_memmgr_obj)
-#define R_MEM_INIT_PTR(child) child->_rain_man_memmgr_attach_memmgr(this->_rain_man_memmgr_obj)
-#define R_MEM_INIT_FROM(mgr, child) child._rain_man_memmgr_attach_memmgr(mgr)
-#define R_MEM_INIT_FROM_PTR(mgr, child) child->_rain_man_memmgr_attach_memmgr(mgr)
-#define R_MEM_MGR this->_rain_man_memmgr_obj
-#define R_MEM_MGR_FROM(obj) obj->_rain_man_memmgr_obj
-#define R_CHILD_MGR this->_rain_man_memmgr_obj->create_child_mgr()
-#define R_WIPE_MGR this->_rain_man_memmgr_obj->wipe()
+#define rmalloc(type, n_elems) this->_rain_man_memmgr_obj->template r_malloc<type>(n_elems)
+#define rnew(type) this->_rain_man_memmgr_obj->template r_malloc<type>(1)
+#define rfree(ptr) this->_rain_man_memmgr_obj->template r_free<typeof ptr>(ptr)
+#define rinit(child) child._rain_man_memmgr_attach_memmgr(this->_rain_man_memmgr_obj)
+#define rinitptr(child) child->_rain_man_memmgr_attach_memmgr(this->_rain_man_memmgr_obj)
+#define rinitfrom(mgr, child) child._rain_man_memmgr_attach_memmgr(mgr)
+#define rinitptrfrom(mgr, child) child->_rain_man_memmgr_attach_memmgr(mgr)
+#define rmemmgr this->_rain_man_memmgr_obj
+#define rmemmgrfrom(obj) obj->_rain_man_memmgr_obj
+#define rchildmgr this->_rain_man_memmgr_obj->create_child_mgr()
+#define rwipe this->_rain_man_memmgr_obj->wipe<void>()
+#define rwipeby(type) this->_rain_man_memmgr_obj->wipe<type>()
 #define rainptr_t(type) rainman::pointer<type>(this->_rain_man_memmgr_obj)
 #define rainptr(ptr) rainman::pointer(ptr, this->_rain_man_memmgr_obj)
 #define rainptr_m(type, n_elems) rainman::pointer(this->_rain_man_memmgr_obj->template r_malloc<type>(n_elems), this->_rain_man_memmgr_obj)
 
 namespace rainman {
-    // Memory context for using R_MALLOC and R_FREE more idiomatically.
+    // Memory context for using rmalloc and rfree more idiomatically.
     class context {
     public:
         memmgr *_rain_man_memmgr_obj;
@@ -52,10 +53,10 @@ namespace rainman {
 
         pointer(memmgr *mgr) {
             _rain_man_memmgr_obj = mgr;
-            ptr = R_NEW(Type);
-            rc = R_NEW(uint64_t);
+            ptr = rnew(Type);
+            rc = rnew(uint64_t);
             *rc = 0;
-            mutex = R_NEW(sem_t);
+            mutex = rnew(sem_t);
             sem_init(mutex, 0, 1);
         }
 
@@ -70,9 +71,9 @@ namespace rainman {
         pointer(Type *ptr, memmgr *mgr) {
             this->ptr = ptr;
             _rain_man_memmgr_obj = mgr;
-            rc = R_NEW(uint64_t);
+            rc = rnew(uint64_t);
             *rc = 0;
-            mutex = R_NEW(sem_t);
+            mutex = rnew(sem_t);
             sem_init(mutex, 0, 1);
         }
 
@@ -84,8 +85,8 @@ namespace rainman {
                 mrc = *rc;
                 if (*rc == 0) {
                     if (_rain_man_memmgr_obj != nullptr) {
-                        R_FREE(ptr);
-                        R_FREE(rc);
+                        rfree(ptr);
+                        rfree(rc);
                     } else {
                         delete[] ptr;
                         delete rc;
@@ -98,7 +99,7 @@ namespace rainman {
 
                 if (!mrc) {
                     if (_rain_man_memmgr_obj != nullptr) {
-                        R_FREE(mutex);
+                        rfree(mutex);
                     } else {
                         delete mutex;
                     }
@@ -127,8 +128,8 @@ namespace rainman {
                 mrc = *rc;
                 if (*rc == 0) {
                     if (_rain_man_memmgr_obj != nullptr) {
-                        R_FREE(ptr);
-                        R_FREE(rc);
+                        rfree(ptr);
+                        rfree(rc);
                     } else {
                         delete[] ptr;
                         delete rc;
@@ -141,7 +142,7 @@ namespace rainman {
 
                 if (!mrc) {
                     if (_rain_man_memmgr_obj != nullptr) {
-                        R_FREE(mutex);
+                        rfree(mutex);
                     } else {
                         delete mutex;
                     }
@@ -179,8 +180,8 @@ namespace rainman {
             mrc = *rc;
             if (*rc == 0) {
                 if (_rain_man_memmgr_obj != nullptr) {
-                    R_FREE(ptr);
-                    R_FREE(rc);
+                    rfree(ptr);
+                    rfree(rc);
                 } else {
                     delete[] ptr;
                     delete rc;
@@ -193,7 +194,7 @@ namespace rainman {
 
             if (!mrc) {
                 if (_rain_man_memmgr_obj != nullptr) {
-                    R_FREE(mutex);
+                    rfree(mutex);
                 } else {
                     delete mutex;
                 }

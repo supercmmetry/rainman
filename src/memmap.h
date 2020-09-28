@@ -6,11 +6,12 @@
 
 namespace rainman {
     struct map_elem {
-        void *ptr;
-        uint64_t alloc_size;
-        map_elem *next;
-        map_elem *next_iter;
-        map_elem *prev_iter;
+        void *ptr = nullptr;
+        uint64_t alloc_size = 0;
+        const char *type_name = nullptr;
+        map_elem *next = nullptr;
+        map_elem *next_iter = nullptr;
+        map_elem *prev_iter = nullptr;
     };
 
     struct memmap {

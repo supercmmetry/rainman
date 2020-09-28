@@ -34,7 +34,7 @@ TEST(MemoryTest, rain_man_wipe) {
         mgr->r_malloc<int>(20);
     }
 
-    mgr->wipe();
+    mgr->wipe<int>();
 
     ASSERT_EQ(mgr->get_alloc_count(), 0);
     ASSERT_EQ(mgr->get_alloc_size(), 0);
@@ -51,7 +51,7 @@ TEST(MemoryTest, rain_man_wipe) {
     ASSERT_EQ(mgr->get_alloc_size(), 0);
     ASSERT_EQ(mgr->get_alloc_count(), 0);
 
-    mgr->wipe();
+    mgr->wipe<int>();
 
     ASSERT_EQ(mgr->get_alloc_count(), 0);
     ASSERT_EQ(mgr->get_alloc_size(), 0);
@@ -68,7 +68,7 @@ TEST(MemoryTest, rain_man_child_tree_1) {
     ASSERT_EQ(child1->get_alloc_count(), 1);
     ASSERT_EQ(mgr->get_alloc_size(), 100);
 
-    child1->wipe();
+    child1->wipe<void>();
 
     ASSERT_EQ(mgr->get_alloc_size(), 0);
 
@@ -84,7 +84,7 @@ TEST(MemoryTest, rain_man_child_tree_1) {
     ASSERT_EQ(mgr->get_alloc_count(), 3);
     ASSERT_EQ(child1->get_alloc_count(), 2);
 
-    child2->wipe();
+    child2->wipe<void>();
 
     ASSERT_EQ(mgr->get_alloc_count(), 2);
     ASSERT_EQ(child1->get_alloc_count(), 2);
