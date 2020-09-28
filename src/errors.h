@@ -1,7 +1,5 @@
-#ifndef RAIN_MAN_ERRORS_H
-#define RAIN_MAN_ERRORS_H
-#ifndef HYBRIDZIP_ERRORS_MEMORY_H
-#define HYBRIDZIP_ERRORS_MEMORY_H
+#ifndef RAINMAN_ERRORS_H
+#define RAINMAN_ERRORS_H
 
 #include <exception>
 #include <string>
@@ -17,8 +15,5 @@ namespace MemoryErrors {
     };
 }
 
-
-
-#endif
 
 #endif

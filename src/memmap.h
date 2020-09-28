@@ -1,5 +1,5 @@
-#ifndef HYBRIDZIP_MEMMAP_H
-#define HYBRIDZIP_MEMMAP_H
+#ifndef RAINMAN_MEMMAP_H
+#define RAINMAN_MEMMAP_H
 
 #include <cstdint>
 #include <memory>

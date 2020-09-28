@@ -1,5 +1,5 @@
-#ifndef HYBRIDZIP_MEM_INTERFACE_H
-#define HYBRIDZIP_MEM_INTERFACE_H
+#ifndef RAINMAN_RAINMAN_H
+#define RAINMAN_RAINMAN_H
 
 #include "memmgr.h"
 
