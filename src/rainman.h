@@ -19,6 +19,28 @@
 #define rainptr(ptr) rainman::pointer(ptr, this->_rain_man_memmgr_obj)
 #define rainptr_m(type, n_elems) rainman::pointer(this->_rain_man_memmgr_obj->template r_malloc<type>(n_elems), this->_rain_man_memmgr_obj)
 
+#define rmod(Class, ...) [this](){                                      \
+    auto _instance = Class(__VA_ARGS__);                                \
+    auto _childmgr = this->_rain_man_memmgr_obj->create_child_mgr();    \
+    _instance._rain_man_memmgr_attach_memmgr(_childmgr);                \
+    return _instance;                                                   \
+}()
+
+#define rscope(Code) {                                                  \
+       class _rainman_safe_scope : public rainman::module {             \
+       public:                                                          \
+            void run() {                                                \
+                Code                                                    \
+            }                                                           \
+       };                                                               \
+                                                                        \
+       auto _instance = _rainman_safe_scope();                          \
+       auto _childmgr = this->_rain_man_memmgr_obj->create_child_mgr(); \
+       _instance._rain_man_memmgr_attach_memmgr(_childmgr);             \
+       _instance.run();                                                 \
+}
+
+
 namespace rainman {
     // Memory context for using rmalloc and rfree more idiomatically.
     class context {
@@ -199,6 +221,14 @@ namespace rainman {
                     delete mutex;
                 }
             }
+        }
+    };
+
+    // Memory-module (A memory leak free class in which all rainman allocations are freed upon destruction)
+    class module : public context {
+    protected:
+        ~module() {
+            rwipe;
         }
     };
 }

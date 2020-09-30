@@ -136,7 +136,7 @@ public:
         }
 
         // Make sure all threads finish execution.
-        for (auto & thread: threads) {
+        for (auto &thread: threads) {
             thread->join();
         }
 
@@ -209,11 +209,11 @@ private:
             // Last but not the least, these smart-pointers are thread-safe.
             // However, this does not mean that the underlying pointer is thread-safe!
 
-            std::vector<std::thread*> threads;
+            std::vector<std::thread *> threads;
 
             for (int i = 0; i < 10; i++) {
                 auto thread = new std::thread([&sptr, i]() {
-                   sptr[i] = i;
+                    sptr[i] = i;
                 });
 
                 threads.push_back(thread);
@@ -261,38 +261,107 @@ public:
     }
 };
 
+
+/*
+ * Create a memory-leak free object using rainman modules. All allocations in a rainman module are de-allocated
+ * automatically.
+ * NOTE: A rainman module cannot have methods that return rainman allocated data. All allocations are de-allocated in
+ * the destructor. This means that any pointer-type returned by a member function might lead to segmentation faults
+ * unless they are allocated without rainman.
+ *
+ */
+
+class RainMan4 : public rainman::context {
+private:
+    class SubClass : public rainman::module {
+    public:
+        SubClass(int x) {
+            std::cout << "SubClass constructor called with value: " << x << std::endl;
+        }
+
+        void run() {
+            int *array = rmalloc(int, 100);
+            // Since we are using a rainman module, everything that is allocated in this class is automatically
+            // de-allocated.
+        }
+    };
+public:
+    void run() {
+        std::cout << "--- Start example 4 ---" << std::endl;
+
+        // We use the rmod macro to create a rainman module.
+        // Format: rmod(Class, constructor parameters)
+
+        // NOTE: A rainman module uses the child memory manager of the current context.
+        {
+            SubClass myFirstRainmanModule = rmod(SubClass, 10);
+            myFirstRainmanModule.run();
+        }
+
+        // Notice that we have zero allocations. No more memory leaks!
+        std::cout << "Allocation size in bytes: " << rmemmgr->get_alloc_size() << std::endl;
+        std::cout << "Allocation count        : " << rmemmgr->get_alloc_count() << std::endl;
+        std::cout << "--- End example 4 ---" << std::endl;
+    }
+};
+
+/*
+ * Run code in a memory-leak free scope.
+ */
+
+class RainMan5 : public rainman::context {
+public:
+    void run() {
+        std::cout << "--- Start example 5 ---" << std::endl;
+
+        rscope(
+                int *x = rmalloc(int, 3);
+
+                for (int i = 0; i < 3; i++) {
+                    x[i] = i * 2;
+                    std::cout << "Safe scope: x[" << i << "] = " << x[i] << std::endl;
+                }
+        )
+
+        // You can use as many leak-free scopes as you want inside a scope.
+        rscope(
+                std::string *s = rnew(std::string);
+                double *y = rnew(double);
+        )
+
+        // Notice that we have zero allocations. No more memory leaks!
+        std::cout << "Allocation size in bytes: " << rmemmgr->get_alloc_size() << std::endl;
+        std::cout << "Allocation count        : " << rmemmgr->get_alloc_count() << std::endl;
+        std::cout << "--- End example 5 ---" << std::endl;
+    }
+};
+
 int main() {
     auto mgr = new rainman::memmgr;
+
     auto example1 = RainMan1();
-
-    // Attach 'mgr' to 'example1'
-    rinitfrom(mgr, example1);
-
-    // Run example1
-    example1.run();
-
-    // Wipe all allocated memory in example1
-    mgr->wipe<void>();
+    rinitfrom(mgr, example1);   // Attach 'mgr' to 'example1'
+    example1.run();             // Run example1
+    mgr->wipe<void>();          // Wipe all allocated memory in example1
 
     auto example2 = RainMan2();
-
-    // Attach 'mgr' to 'example2'
     rinitfrom(mgr, example2);
-
-    // Run example2
     example2.run();
-
-    // Wipe all allocated memory in example2
     mgr->wipe<void>();
 
     auto example3 = RainMan3();
-
-    // Attach 'mgr' to 'example3'
     rinitfrom(mgr, example3);
-
-    // Run example3
     example3.run();
-
-    // Wipe all allocated memory in example3
     mgr->wipe<void>();
+
+    auto example4 = RainMan4();
+    rinitfrom(mgr, example4);
+    example4.run();
+    mgr->wipe<void>();
+
+    auto example5 = RainMan5();
+    rinitfrom(mgr, example5);
+    example5.run();
+    mgr->wipe<void>();
+
 }
