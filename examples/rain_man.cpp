@@ -323,9 +323,10 @@ public:
                 }
         )
 
-        // You can use as many leak-free scopes as you want inside a scope.
+        // You can use as many leak-free scopes as you want.
         rscope(
                 std::string *s = rnew(std::string);
+                std::string *s2 = rnew(std::string);
                 double *y = rnew(double);
         )
 
