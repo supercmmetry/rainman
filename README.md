@@ -8,3 +8,4 @@ A lightweight flexible hierarchical memory manager for C++
 - De-allocate multiple objects on the fly.
 - A super-cool thread-safe smart pointer that integrates with the memory manager.
 - An in-built macro-based DSL to make things more easier.
+- Run code in safe memory-leak proof scopes and modules.
