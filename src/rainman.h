@@ -5,6 +5,13 @@
 
 #define rmalloc(type, n_elems) this->_rain_man_memmgr_obj->template r_malloc<type>(n_elems)
 #define rnew(type) this->_rain_man_memmgr_obj->template r_malloc<type>(1)
+#define rxnew(type, ...) [&]() {                                             \
+    auto *t = this->_rain_man_memmgr_obj->template r_malloc<type>(1);           \
+    *t = type(__VA_ARGS__);                                                     \
+    t->_rain_man_memmgr_attach_memmgr(this->_rain_man_memmgr_obj);              \
+    return t;                                                                   \
+}()
+
 #define rfree(ptr) this->_rain_man_memmgr_obj->template r_free<typeof ptr>(ptr)
 #define rinit(child) child._rain_man_memmgr_attach_memmgr(this->_rain_man_memmgr_obj)
 #define rinitptr(child) child->_rain_man_memmgr_attach_memmgr(this->_rain_man_memmgr_obj)
