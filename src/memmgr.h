@@ -16,6 +16,7 @@ namespace rainman {
         uint64_t allocation_size;
         uint64_t n_allocations;
         uint64_t peak_size;
+        uint64_t leak_counter;
         memmap *memmap;
         memmgr *parent;
         std::unordered_map<memmgr*, bool> children;

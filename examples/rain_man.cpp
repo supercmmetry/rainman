@@ -138,6 +138,7 @@ public:
         // Make sure all threads finish execution.
         for (auto &thread: threads) {
             thread->join();
+            delete thread;
         }
 
         // Now, we view the allocations under the parent memory manager i.e. (rmemmgr).
@@ -221,6 +222,7 @@ private:
 
             for (auto &thread : threads) {
                 thread->join();
+                delete thread;
             }
 
             for (int i = 0; i < 10; i++) {
@@ -285,6 +287,7 @@ private:
             // de-allocated.
         }
     };
+
 public:
     void run() {
         std::cout << "--- Start example 4 ---" << std::endl;
@@ -325,12 +328,17 @@ public:
 
         // You can use as many leak-free scopes as you want.
         rscope(
+                auto *y = rnew(double);
+                auto *h = rmalloc(double, 1048576);
+                auto *z = rmalloc(RainMan5, 10);
+
+                // For some STL types, rainman fails to de-allocate the object properly without type information.
+                // These objects have to be manually destroyed, otherwise SIGABRT is thrown.
+
                 std::string *s = rnew(std::string);
-                std::string *s2 = rnew(std::string);
-                double *y = rnew(double);
+                rfree(s); // or rwipeby(std::string);
         )
 
-        // Notice that we have zero allocations. No more memory leaks!
         std::cout << "Allocation size in bytes: " << rmemmgr->get_alloc_size() << std::endl;
         std::cout << "Allocation count        : " << rmemmgr->get_alloc_count() << std::endl;
         std::cout << "--- End example 5 ---" << std::endl;
@@ -365,4 +373,5 @@ int main() {
     example5.run();
     mgr->wipe<void>();
 
+    delete mgr;
 }

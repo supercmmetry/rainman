@@ -5,12 +5,12 @@
 #include <string>
 
 namespace MemoryErrors {
-    class PeakLimitReachedException: public std::exception {
+    class PeakLimitReachedException : public std::exception {
     public:
         PeakLimitReachedException() = default;
 
         [[nodiscard]] const char *what() const noexcept override {
-            return "rain-man: peak limit reached";
+            return "rainman: Peak limit reached";
         }
     };
 }

@@ -3,9 +3,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <csignal>
-#include <cstdlib>
-#include <csetjmp>
 
 namespace rainman {
     struct map_elem {
@@ -17,16 +14,9 @@ namespace rainman {
         map_elem *prev_iter = nullptr;
     };
 
-    static jmp_buf _rainman_memmap_env;
-
     struct memmap {
     private:
         uint64_t hash(void *ptr);
-
-        static void on_sigabrt (int signum) {
-            signal (signum, SIG_DFL);
-            longjmp (_rainman_memmap_env, 1);
-        }
 
     public:
         uint64_t max_size;
@@ -37,7 +27,7 @@ namespace rainman {
         memmap(uint64_t size);
 
         ~memmap() {
-            delete mapptr;
+            delete[] mapptr;
         }
 
         void add(map_elem *elem);
@@ -47,7 +37,9 @@ namespace rainman {
 
         template<typename Type>
         void remove_by_type(Type ptr) {
-            uint64_t ptr_hash = hash(ptr);
+            delete[] ptr;
+
+            uint64_t ptr_hash = hash((void *) ptr);
             auto curr = mapptr[ptr_hash];
             auto prev = curr;
 
@@ -56,16 +48,14 @@ namespace rainman {
                 curr = curr->next;
             }
 
+            if (curr == nullptr) {
+                return;
+            }
+
             if (prev != curr) {
                 prev->next = curr->next;
             } else {
                 mapptr[ptr_hash] = curr->next;
-            }
-
-            if (setjmp(_rainman_memmap_env) == 0) {
-                signal(SIGABRT, &on_sigabrt);
-                delete[] ptr;
-                signal(SIGABRT, SIG_DFL);
             }
 
             // Remove curr from the iteration linked-list
