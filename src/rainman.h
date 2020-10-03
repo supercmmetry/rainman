@@ -236,6 +236,8 @@ namespace rainman {
     protected:
         ~module() {
             rwipe;
+            rmemmgr->unregister();
+            delete rmemmgr;
         }
     };
 }

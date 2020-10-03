@@ -5,6 +5,7 @@
 #include <cstring>
 #include <semaphore.h>
 #include <vector>
+#include <unordered_map>
 #include <typeinfo>
 #include "errors.h"
 #include "memmap.h"
@@ -17,7 +18,7 @@ namespace rainman {
         uint64_t peak_size;
         memmap *memmap;
         memmgr *parent;
-        std::vector<memmgr *> children;
+        std::unordered_map<memmgr*, bool> children;
         sem_t mutex{};
 
         void lock();
@@ -92,6 +93,8 @@ namespace rainman {
 
         void set_parent(memmgr *p);
 
+        void unregister();
+
         uint64_t get_alloc_count();
 
         uint64_t get_alloc_size();
@@ -134,8 +137,8 @@ namespace rainman {
 
             if (wipe_children) {
                 for (auto &child : children) {
-                    child->wipe<Type>();
-                    delete child;
+                    child.first->wipe<Type>();
+                    delete child.first;
                 }
 
                 children.clear();

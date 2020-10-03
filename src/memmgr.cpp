@@ -74,8 +74,14 @@ rainman::memmgr *rainman::memmgr::create_child_mgr() {
     mgr->parent = this;
 
     lock();
-    children.push_back(mgr);
+    children[mgr] = true;
     unlock();
 
     return mgr;
+}
+
+void rainman::memmgr::unregister() {
+    if (parent != nullptr) {
+        parent->children.erase(this);
+    }
 }
