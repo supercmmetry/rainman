@@ -2,10 +2,11 @@
 #include "memmap.h"
 
 rainman::memmap::memmap(uint64_t size) {
-    mapptr =  new map_elem*[size];
+    mapptr = new map_elem *[size];
     for (int i = 0; i < size; i++) {
         mapptr[i] = nullptr;
     }
+
     max_size = size;
 
     iterptr = nullptr;

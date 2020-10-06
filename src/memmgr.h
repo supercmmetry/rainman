@@ -19,7 +19,7 @@ namespace rainman {
         uint64_t leak_counter;
         memmap *memmap;
         memmgr *parent;
-        std::unordered_map<memmgr*, bool> children;
+        std::unordered_map<memmgr *, bool> children;
         sem_t mutex{};
 
         void lock();
@@ -124,10 +124,10 @@ namespace rainman {
                 if (elem != nullptr) {
                     if (strcmp(typeid(Type).name(), typeid(void).name()) == 0) {
                         update(allocation_size - elem->alloc_size, n_allocations - 1);
-                        memmap->remove_by_type<void*>(ptr);
+                        memmap->remove_by_type<void *>(ptr);
                     } else if (strcmp(typeid(Type).name(), elem->type_name) == 0) {
                         update(allocation_size - elem->alloc_size, n_allocations - 1);
-                        memmap->remove_by_type<Type*>((Type*)ptr);
+                        memmap->remove_by_type<Type *>((Type *) ptr);
                     }
                 }
 

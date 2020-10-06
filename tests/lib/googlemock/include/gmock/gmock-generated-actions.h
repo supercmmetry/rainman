@@ -508,95 +508,95 @@ namespace testing {
 //   InvokeArgument action from temporary values and have it performed
 //   later.
 
-ACTION_TEMPLATE(InvokeArgument,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_0_VALUE_PARAMS()) {
-  using internal::invoke_argument::InvokeArgumentAdl;
-  return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
-                           ::std::get<k>(args));
-}
+    ACTION_TEMPLATE(InvokeArgument,
+                    HAS_1_TEMPLATE_PARAMS(int, k),
+                    AND_0_VALUE_PARAMS()) {
+        using internal::invoke_argument::InvokeArgumentAdl;
+        return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
+                                 ::std::get<k>(args));
+    }
 
-ACTION_TEMPLATE(InvokeArgument,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_1_VALUE_PARAMS(p0)) {
-  using internal::invoke_argument::InvokeArgumentAdl;
-  return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
-                           ::std::get<k>(args), p0);
-}
+    ACTION_TEMPLATE(InvokeArgument,
+                    HAS_1_TEMPLATE_PARAMS(int, k),
+                    AND_1_VALUE_PARAMS(p0)) {
+        using internal::invoke_argument::InvokeArgumentAdl;
+        return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
+                                 ::std::get<k>(args), p0);
+    }
 
-ACTION_TEMPLATE(InvokeArgument,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_2_VALUE_PARAMS(p0, p1)) {
-  using internal::invoke_argument::InvokeArgumentAdl;
-  return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
-                           ::std::get<k>(args), p0, p1);
-}
+    ACTION_TEMPLATE(InvokeArgument,
+                    HAS_1_TEMPLATE_PARAMS(int, k),
+                    AND_2_VALUE_PARAMS(p0, p1)) {
+        using internal::invoke_argument::InvokeArgumentAdl;
+        return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
+                                 ::std::get<k>(args), p0, p1);
+    }
 
-ACTION_TEMPLATE(InvokeArgument,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_3_VALUE_PARAMS(p0, p1, p2)) {
-  using internal::invoke_argument::InvokeArgumentAdl;
-  return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
-                           ::std::get<k>(args), p0, p1, p2);
-}
+    ACTION_TEMPLATE(InvokeArgument,
+                    HAS_1_TEMPLATE_PARAMS(int, k),
+                    AND_3_VALUE_PARAMS(p0, p1, p2)) {
+        using internal::invoke_argument::InvokeArgumentAdl;
+        return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
+                                 ::std::get<k>(args), p0, p1, p2);
+    }
 
-ACTION_TEMPLATE(InvokeArgument,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_4_VALUE_PARAMS(p0, p1, p2, p3)) {
-  using internal::invoke_argument::InvokeArgumentAdl;
-  return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
-                           ::std::get<k>(args), p0, p1, p2, p3);
-}
+    ACTION_TEMPLATE(InvokeArgument,
+                    HAS_1_TEMPLATE_PARAMS(int, k),
+                    AND_4_VALUE_PARAMS(p0, p1, p2, p3)) {
+        using internal::invoke_argument::InvokeArgumentAdl;
+        return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
+                                 ::std::get<k>(args), p0, p1, p2, p3);
+    }
 
-ACTION_TEMPLATE(InvokeArgument,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_5_VALUE_PARAMS(p0, p1, p2, p3, p4)) {
-  using internal::invoke_argument::InvokeArgumentAdl;
-  return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
-                           ::std::get<k>(args), p0, p1, p2, p3, p4);
-}
+    ACTION_TEMPLATE(InvokeArgument,
+                    HAS_1_TEMPLATE_PARAMS(int, k),
+                    AND_5_VALUE_PARAMS(p0, p1, p2, p3, p4)) {
+        using internal::invoke_argument::InvokeArgumentAdl;
+        return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
+                                 ::std::get<k>(args), p0, p1, p2, p3, p4);
+    }
 
-ACTION_TEMPLATE(InvokeArgument,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_6_VALUE_PARAMS(p0, p1, p2, p3, p4, p5)) {
-  using internal::invoke_argument::InvokeArgumentAdl;
-  return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
-                           ::std::get<k>(args), p0, p1, p2, p3, p4, p5);
-}
+    ACTION_TEMPLATE(InvokeArgument,
+                    HAS_1_TEMPLATE_PARAMS(int, k),
+                    AND_6_VALUE_PARAMS(p0, p1, p2, p3, p4, p5)) {
+        using internal::invoke_argument::InvokeArgumentAdl;
+        return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
+                                 ::std::get<k>(args), p0, p1, p2, p3, p4, p5);
+    }
 
-ACTION_TEMPLATE(InvokeArgument,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_7_VALUE_PARAMS(p0, p1, p2, p3, p4, p5, p6)) {
-  using internal::invoke_argument::InvokeArgumentAdl;
-  return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
-                           ::std::get<k>(args), p0, p1, p2, p3, p4, p5, p6);
-}
+    ACTION_TEMPLATE(InvokeArgument,
+                    HAS_1_TEMPLATE_PARAMS(int, k),
+                    AND_7_VALUE_PARAMS(p0, p1, p2, p3, p4, p5, p6)) {
+        using internal::invoke_argument::InvokeArgumentAdl;
+        return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
+                                 ::std::get<k>(args), p0, p1, p2, p3, p4, p5, p6);
+    }
 
-ACTION_TEMPLATE(InvokeArgument,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_8_VALUE_PARAMS(p0, p1, p2, p3, p4, p5, p6, p7)) {
-  using internal::invoke_argument::InvokeArgumentAdl;
-  return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
-                           ::std::get<k>(args), p0, p1, p2, p3, p4, p5, p6, p7);
-}
+    ACTION_TEMPLATE(InvokeArgument,
+                    HAS_1_TEMPLATE_PARAMS(int, k),
+                    AND_8_VALUE_PARAMS(p0, p1, p2, p3, p4, p5, p6, p7)) {
+        using internal::invoke_argument::InvokeArgumentAdl;
+        return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
+                                 ::std::get<k>(args), p0, p1, p2, p3, p4, p5, p6, p7);
+    }
 
-ACTION_TEMPLATE(InvokeArgument,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_9_VALUE_PARAMS(p0, p1, p2, p3, p4, p5, p6, p7, p8)) {
-  using internal::invoke_argument::InvokeArgumentAdl;
-  return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
-                           ::std::get<k>(args), p0, p1, p2, p3, p4, p5, p6, p7,
-                               p8);
-}
+    ACTION_TEMPLATE(InvokeArgument,
+                    HAS_1_TEMPLATE_PARAMS(int, k),
+                    AND_9_VALUE_PARAMS(p0, p1, p2, p3, p4, p5, p6, p7, p8)) {
+        using internal::invoke_argument::InvokeArgumentAdl;
+        return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
+                                 ::std::get<k>(args), p0, p1, p2, p3, p4, p5, p6, p7,
+                                 p8);
+    }
 
-ACTION_TEMPLATE(InvokeArgument,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_10_VALUE_PARAMS(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9)) {
-  using internal::invoke_argument::InvokeArgumentAdl;
-  return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
-                           ::std::get<k>(args), p0, p1, p2, p3, p4, p5, p6, p7,
-                               p8, p9);
-}
+    ACTION_TEMPLATE(InvokeArgument,
+                    HAS_1_TEMPLATE_PARAMS(int, k),
+                    AND_10_VALUE_PARAMS(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9)) {
+        using internal::invoke_argument::InvokeArgumentAdl;
+        return InvokeArgumentAdl(internal::invoke_argument::AdlTag(),
+                                 ::std::get<k>(args), p0, p1, p2, p3, p4, p5, p6, p7,
+                                 p8, p9);
+    }
 
 #ifdef _MSC_VER
 # pragma warning(pop)

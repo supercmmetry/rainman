@@ -82,6 +82,8 @@ rainman::memmgr *rainman::memmgr::create_child_mgr() {
 
 void rainman::memmgr::unregister() {
     if (parent != nullptr) {
+        parent->lock();
         parent->children.erase(this);
+        parent->unlock();
     }
 }

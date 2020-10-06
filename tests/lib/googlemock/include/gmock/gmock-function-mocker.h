@@ -44,28 +44,28 @@
 #include "gmock/internal/gmock-pp.h"
 
 namespace testing {
-namespace internal {
-template <typename T>
-using identity_t = T;
+    namespace internal {
+        template<typename T>
+        using identity_t = T;
 
-template <typename MockType>
-const MockType* AdjustConstness_const(const MockType* mock) {
-  return mock;
-}
+        template<typename MockType>
+        const MockType *AdjustConstness_const(const MockType *mock) {
+            return mock;
+        }
 
-template <typename MockType>
-MockType* AdjustConstness_(const MockType* mock) {
-  return const_cast<MockType*>(mock);
-}
+        template<typename MockType>
+        MockType *AdjustConstness_(const MockType *mock) {
+            return const_cast<MockType *>(mock);
+        }
 
-}  // namespace internal
+    }  // namespace internal
 
 // The style guide prohibits "using" statements in a namespace scope
 // inside a header file.  However, the FunctionMocker class template
 // is meant to be defined in the ::testing namespace.  The following
 // line is just a trick for working around a bug in MSVC 8.0, which
 // cannot handle it if we define FunctionMocker in ::testing.
-using internal::FunctionMocker;
+    using internal::FunctionMocker;
 }  // namespace testing
 
 #define MOCK_METHOD(...) \
@@ -129,8 +129,8 @@ using internal::FunctionMocker;
 #define GMOCK_INTERNAL_ASSERT_VALID_SPEC(_Spec) \
   GMOCK_PP_FOR_EACH(GMOCK_INTERNAL_ASSERT_VALID_SPEC_ELEMENT, ~, _Spec)
 
-#define GMOCK_INTERNAL_MOCK_METHOD_IMPL(_N, _MethodName, _Constness,           \
-                                        _Override, _Final, _NoexceptSpec,      \
+#define GMOCK_INTERNAL_MOCK_METHOD_IMPL(_N, _MethodName, _Constness, \
+                                        _Override, _Final, _NoexceptSpec, \
                                         _CallType, _Signature)                 \
   typename ::testing::internal::Function<GMOCK_PP_REMOVE_PARENS(               \
       _Signature)>::Result                                                     \
