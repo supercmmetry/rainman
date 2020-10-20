@@ -94,6 +94,8 @@ namespace rainman {
 
         void set_parent(memmgr *p);
 
+        memmgr *get_parent();
+
         void unregister();
 
         uint64_t get_alloc_count();

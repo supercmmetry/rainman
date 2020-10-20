@@ -87,3 +87,7 @@ void rainman::memmgr::unregister() {
         parent->unlock();
     }
 }
+
+rainman::memmgr *rainman::memmgr::get_parent() {
+    return parent;
+}
