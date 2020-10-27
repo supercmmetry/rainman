@@ -12,6 +12,12 @@
     return t;                                                                   \
 }()
 
+#define ronew(type, ...) [&]() {                                             \
+    auto t = type(__VA_ARGS__);                                                     \
+    t._rain_man_memmgr_attach_memmgr(this->_rain_man_memmgr_obj);              \
+    return t;                                                                   \
+}()
+
 #define rfree(ptr) this->_rain_man_memmgr_obj->template r_free<typeof ptr>(ptr)
 #define rinit(child) child._rain_man_memmgr_attach_memmgr(this->_rain_man_memmgr_obj)
 #define rinitptr(child) child->_rain_man_memmgr_attach_memmgr(this->_rain_man_memmgr_obj)
