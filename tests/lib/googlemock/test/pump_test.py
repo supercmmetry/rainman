@@ -31,8 +31,8 @@
 
 """Tests for the Pump meta-programming tool."""
 
-import google3.third_party.googletest.googlemock.scripts.pump
 from google3.testing.pybase import googletest
+import google3.third_party.googletest.googlemock.scripts.pump
 
 pump = google3.third_party.googletest.googlemock.scripts.pump
 Convert = pump.ConvertFromPumpSource
@@ -41,142 +41,142 @@ StripMetaComments = pump.StripMetaComments
 
 class PumpTest(googletest.TestCase):
 
-    def testConvertsEmptyToEmpty(self):
-        self.assertEquals('', Convert('').strip())
+  def testConvertsEmptyToEmpty(self):
+    self.assertEquals('', Convert('').strip())
 
-    def testConvertsPlainCodeToSame(self):
-        self.assertEquals('#include <stdio.h>\n',
-                          Convert('#include <stdio.h>\n'))
+  def testConvertsPlainCodeToSame(self):
+    self.assertEquals('#include <stdio.h>\n',
+                      Convert('#include <stdio.h>\n'))
 
-    def testConvertsLongIWYUPragmaToSame(self):
-        long_line = '// IWYU pragma: private, include "' + (80 * 'a') + '.h"\n'
-        self.assertEquals(long_line, Convert(long_line))
+  def testConvertsLongIWYUPragmaToSame(self):
+    long_line = '// IWYU pragma: private, include "' + (80*'a') + '.h"\n'
+    self.assertEquals(long_line, Convert(long_line))
 
-    def testConvertsIWYUPragmaWithLeadingSpaceToSame(self):
-        long_line = ' // IWYU pragma: private, include "' + (80 * 'a') + '.h"\n'
-        self.assertEquals(long_line, Convert(long_line))
+  def testConvertsIWYUPragmaWithLeadingSpaceToSame(self):
+    long_line = ' // IWYU pragma: private, include "' + (80*'a') + '.h"\n'
+    self.assertEquals(long_line, Convert(long_line))
 
-    def testConvertsIWYUPragmaWithSlashStarLeaderToSame(self):
-        long_line = '/* IWYU pragma: private, include "' + (80 * 'a') + '.h"\n'
-        self.assertEquals(long_line, Convert(long_line))
+  def testConvertsIWYUPragmaWithSlashStarLeaderToSame(self):
+    long_line = '/* IWYU pragma: private, include "' + (80*'a') + '.h"\n'
+    self.assertEquals(long_line, Convert(long_line))
 
-    def testConvertsIWYUPragmaWithSlashStarAndSpacesToSame(self):
-        long_line = ' /* IWYU pragma: private, include "' + (80 * 'a') + '.h"\n'
-        self.assertEquals(long_line, Convert(long_line))
+  def testConvertsIWYUPragmaWithSlashStarAndSpacesToSame(self):
+    long_line = ' /* IWYU pragma: private, include "' + (80*'a') + '.h"\n'
+    self.assertEquals(long_line, Convert(long_line))
 
-    def testIgnoresMetaComment(self):
-        self.assertEquals('',
-                          Convert('$$ This is a Pump meta comment.\n').strip())
+  def testIgnoresMetaComment(self):
+    self.assertEquals('',
+                      Convert('$$ This is a Pump meta comment.\n').strip())
 
-    def testSimpleVarDeclarationWorks(self):
-        self.assertEquals('3\n',
-                          Convert('$var m = 3\n'
-                                  '$m\n'))
+  def testSimpleVarDeclarationWorks(self):
+    self.assertEquals('3\n',
+                      Convert('$var m = 3\n'
+                              '$m\n'))
 
-    def testVarDeclarationCanReferenceEarlierVar(self):
-        self.assertEquals('43 != 3;\n',
-                          Convert('$var a = 42\n'
-                                  '$var b = a + 1\n'
-                                  '$var c = (b - a)*3\n'
-                                  '$b != $c;\n'))
+  def testVarDeclarationCanReferenceEarlierVar(self):
+    self.assertEquals('43 != 3;\n',
+                      Convert('$var a = 42\n'
+                              '$var b = a + 1\n'
+                              '$var c = (b - a)*3\n'
+                              '$b != $c;\n'))
 
-    def testSimpleLoopWorks(self):
-        self.assertEquals('1, 2, 3, 4, 5\n',
-                          Convert('$var n = 5\n'
-                                  '$range i 1..n\n'
-                                  '$for i, [[$i]]\n'))
+  def testSimpleLoopWorks(self):
+    self.assertEquals('1, 2, 3, 4, 5\n',
+                      Convert('$var n = 5\n'
+                              '$range i 1..n\n'
+                              '$for i, [[$i]]\n'))
 
-    def testSimpleLoopWithCommentWorks(self):
-        self.assertEquals('1, 2, 3, 4, 5\n',
-                          Convert('$var n = 5    $$ This is comment 1.\n'
-                                  '$range i 1..n $$ This is comment 2.\n'
-                                  '$for i, [[$i]]\n'))
+  def testSimpleLoopWithCommentWorks(self):
+    self.assertEquals('1, 2, 3, 4, 5\n',
+                      Convert('$var n = 5    $$ This is comment 1.\n'
+                              '$range i 1..n $$ This is comment 2.\n'
+                              '$for i, [[$i]]\n'))
 
-    def testNonTrivialRangeExpressionsWork(self):
-        self.assertEquals('1, 2, 3, 4\n',
-                          Convert('$var n = 5\n'
-                                  '$range i (n/n)..(n - 1)\n'
-                                  '$for i, [[$i]]\n'))
+  def testNonTrivialRangeExpressionsWork(self):
+    self.assertEquals('1, 2, 3, 4\n',
+                      Convert('$var n = 5\n'
+                              '$range i (n/n)..(n - 1)\n'
+                              '$for i, [[$i]]\n'))
 
-    def testLoopWithoutSeparatorWorks(self):
-        self.assertEquals('a + 1 + 2 + 3;\n',
-                          Convert('$range i 1..3\n'
-                                  'a$for i [[ + $i]];\n'))
+  def testLoopWithoutSeparatorWorks(self):
+    self.assertEquals('a + 1 + 2 + 3;\n',
+                      Convert('$range i 1..3\n'
+                              'a$for i [[ + $i]];\n'))
 
-    def testCanGenerateDollarSign(self):
-        self.assertEquals('$\n', Convert('$($)\n'))
+  def testCanGenerateDollarSign(self):
+    self.assertEquals('$\n', Convert('$($)\n'))
 
-    def testCanIterpolateExpressions(self):
-        self.assertEquals('a[2] = 3;\n',
-                          Convert('$var i = 1\n'
-                                  'a[$(i + 1)] = $(i*4 - 1);\n'))
+  def testCanIterpolateExpressions(self):
+    self.assertEquals('a[2] = 3;\n',
+                      Convert('$var i = 1\n'
+                              'a[$(i + 1)] = $(i*4 - 1);\n'))
 
-    def testConditionalWithoutElseBranchWorks(self):
-        self.assertEquals('true\n',
-                          Convert('$var n = 5\n'
-                                  '$if n > 0 [[true]]\n'))
+  def testConditionalWithoutElseBranchWorks(self):
+    self.assertEquals('true\n',
+                      Convert('$var n = 5\n'
+                              '$if n > 0 [[true]]\n'))
 
-    def testConditionalWithElseBranchWorks(self):
-        self.assertEquals('true -- really false\n',
-                          Convert('$var n = 5\n'
-                                  '$if n > 0 [[true]]\n'
-                                  '$else [[false]] -- \n'
-                                  '$if n > 10 [[really true]]\n'
-                                  '$else [[really false]]\n'))
+  def testConditionalWithElseBranchWorks(self):
+    self.assertEquals('true -- really false\n',
+                      Convert('$var n = 5\n'
+                              '$if n > 0 [[true]]\n'
+                              '$else [[false]] -- \n'
+                              '$if n > 10 [[really true]]\n'
+                              '$else [[really false]]\n'))
 
-    def testConditionalWithCascadingElseBranchWorks(self):
-        self.assertEquals('a\n',
-                          Convert('$var n = 5\n'
-                                  '$if n > 0 [[a]]\n'
-                                  '$elif n > 10 [[b]]\n'
-                                  '$else [[c]]\n'))
-        self.assertEquals('b\n',
-                          Convert('$var n = 5\n'
-                                  '$if n > 10 [[a]]\n'
-                                  '$elif n > 0 [[b]]\n'
-                                  '$else [[c]]\n'))
-        self.assertEquals('c\n',
-                          Convert('$var n = 5\n'
-                                  '$if n > 10 [[a]]\n'
-                                  '$elif n > 8 [[b]]\n'
-                                  '$else [[c]]\n'))
+  def testConditionalWithCascadingElseBranchWorks(self):
+    self.assertEquals('a\n',
+                      Convert('$var n = 5\n'
+                              '$if n > 0 [[a]]\n'
+                              '$elif n > 10 [[b]]\n'
+                              '$else [[c]]\n'))
+    self.assertEquals('b\n',
+                      Convert('$var n = 5\n'
+                              '$if n > 10 [[a]]\n'
+                              '$elif n > 0 [[b]]\n'
+                              '$else [[c]]\n'))
+    self.assertEquals('c\n',
+                      Convert('$var n = 5\n'
+                              '$if n > 10 [[a]]\n'
+                              '$elif n > 8 [[b]]\n'
+                              '$else [[c]]\n'))
 
-    def testNestedLexicalBlocksWork(self):
-        self.assertEquals('a = 5;\n',
-                          Convert('$var n = 5\n'
-                                  'a = [[$if n > 0 [[$n]]]];\n'))
+  def testNestedLexicalBlocksWork(self):
+    self.assertEquals('a = 5;\n',
+                      Convert('$var n = 5\n'
+                              'a = [[$if n > 0 [[$n]]]];\n'))
 
 
 class StripMetaCommentsTest(googletest.TestCase):
 
-    def testReturnsSameStringIfItContainsNoComment(self):
-        self.assertEquals('', StripMetaComments(''))
-        self.assertEquals(' blah ', StripMetaComments(' blah '))
-        self.assertEquals('A single $ is fine.',
-                          StripMetaComments('A single $ is fine.'))
-        self.assertEquals('multiple\nlines',
-                          StripMetaComments('multiple\nlines'))
+  def testReturnsSameStringIfItContainsNoComment(self):
+    self.assertEquals('', StripMetaComments(''))
+    self.assertEquals(' blah ', StripMetaComments(' blah '))
+    self.assertEquals('A single $ is fine.',
+                      StripMetaComments('A single $ is fine.'))
+    self.assertEquals('multiple\nlines',
+                      StripMetaComments('multiple\nlines'))
 
-    def testStripsSimpleComment(self):
-        self.assertEquals('yes\n', StripMetaComments('yes $$ or no?\n'))
+  def testStripsSimpleComment(self):
+    self.assertEquals('yes\n', StripMetaComments('yes $$ or no?\n'))
 
-    def testStripsSimpleCommentWithMissingNewline(self):
-        self.assertEquals('yes', StripMetaComments('yes $$ or no?'))
+  def testStripsSimpleCommentWithMissingNewline(self):
+    self.assertEquals('yes', StripMetaComments('yes $$ or no?'))
 
-    def testStripsPureCommentLinesEntirely(self):
-        self.assertEquals('yes\n',
-                          StripMetaComments('$$ a pure comment line.\n'
-                                            'yes $$ or no?\n'
-                                            '    $$ another comment line.\n'))
+  def testStripsPureCommentLinesEntirely(self):
+    self.assertEquals('yes\n',
+                      StripMetaComments('$$ a pure comment line.\n'
+                                        'yes $$ or no?\n'
+                                        '    $$ another comment line.\n'))
 
-    def testStripsCommentsFromMultiLineText(self):
-        self.assertEquals('multi-\n'
-                          'line\n'
-                          'text is fine.',
-                          StripMetaComments('multi- $$ comment 1\n'
-                                            'line\n'
-                                            'text is fine. $$ comment 2'))
+  def testStripsCommentsFromMultiLineText(self):
+    self.assertEquals('multi-\n'
+                      'line\n'
+                      'text is fine.',
+                      StripMetaComments('multi- $$ comment 1\n'
+                                        'line\n'
+                                        'text is fine. $$ comment 2'))
 
 
 if __name__ == '__main__':
-    googletest.main()
+  googletest.main()

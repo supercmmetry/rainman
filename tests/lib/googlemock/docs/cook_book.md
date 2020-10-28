@@ -3,12 +3,14 @@
 <!-- GOOGLETEST_CM0012 DO NOT DELETE -->
 
 You can find recipes for using gMock here. If you haven't yet, please read
-[this](for_dummies.md) first to make sure you understand the basics.
+[the dummy guide](for_dummies.md) first to make sure you understand the basics.
 
 **Note:** gMock lives in the `testing` name space. For readability, it is
 recommended to write `using ::testing::Foo;` once in your file before using the
 name `Foo` defined by gMock. We omit such `using` statements in this section for
 brevity, but you should do it in your own code.
+
+<!-- GOOGLETEST_CM0035 DO NOT DELETE -->
 
 ## Creating Mock Classes
 
@@ -281,9 +283,11 @@ recipe for [mocking non-virtual methods](#MockingNonVirtualMethods).
 
 ### Old-Style `MOCK_METHODn` Macros
 
-Before the generic `MOCK_METHOD` macro was introduced, mocks where created using
-a family of macros collectively called `MOCK_METHODn`. These macros are still
-supported, though migration to the new `MOCK_METHOD` is recommended.
+Before the generic `MOCK_METHOD` macro
+[was introduced in 2018](https://github.com/google/googletest/commit/c5f08bf91944ce1b19bcf414fa1760e69d20afc2),
+mocks where created using a family of macros collectively called `MOCK_METHODn`.
+These macros are still supported, though migration to the new `MOCK_METHOD` is
+recommended.
 
 The macros in the `MOCK_METHODn` family differ from `MOCK_METHOD`:
 
@@ -777,28 +781,12 @@ perhaps your test doesn't need to mock `Concrete()` at all (but it would be
 oh-so painful to have to define a new mock class whenever you don't need to mock
 one of its methods).
 
-The trick is to leave a back door in your mock class for accessing the real
-methods in the base class:
-
-```cpp
-class MockFoo : public Foo {
- public:
-  // Mocking a pure method.
-  MOCK_METHOD(void, Pure, (int n), (override));
-  // Mocking a concrete method.  Foo::Concrete() is shadowed.
-  MOCK_METHOD(int, Concrete, (const char* str), (override));
-
-  // Use this to call Concrete() defined in Foo.
-  int FooConcrete(const char* str) { return Foo::Concrete(str); }
-};
-```
-
-Now, you can call `Foo::Concrete()` inside an action by:
+You can call `Foo::Concrete()` inside an action by:
 
 ```cpp
 ...
   EXPECT_CALL(foo, Concrete).WillOnce([&foo](const char* str) {
-    return foo.FooConcrete(str);
+    return foo.Foo::Concrete(str);
   });
 ```
 
@@ -807,7 +795,7 @@ or tell the mock object that you don't want to mock `Concrete()`:
 ```cpp
 ...
   ON_CALL(foo, Concrete).WillByDefault([&foo](const char* str) {
-    return foo.FooConcrete(str);
+    return foo.Foo::Concrete(str);
   });
 ```
 
@@ -869,6 +857,22 @@ using ::testing::Not;
   // The first argument must not contain sub-string "blah".
   EXPECT_CALL(foo, DoThat(Not(HasSubstr("blah")),
                           NULL));
+```
+
+Matchers are function objects, and parametrized matchers can be composed just
+like any other function. However because their types can be long and rarely
+provide meaningful information, it can be easier to express them with C++14
+generic lambdas to avoid specifying types. For example,
+
+```cpp
+using ::testing::Contains;
+using ::testing::Property;
+
+inline constexpr auto HasFoo = [](const auto& f) {
+  return Property(&MyClass::foo, Contains(f));
+};
+...
+  EXPECT_THAT(x, HasFoo("blah"));
 ```
 
 ### Casting Matchers {#SafeMatcherCast}
@@ -1144,10 +1148,11 @@ Hamcrest project, which adds `assertThat()` to JUnit.
 
 ### Using Predicates as Matchers
 
-gMock provides a [built-in set](#MatcherList) of matchers. In case you find them
-lacking, you can use an arbitrary unary predicate function or functor as a
-matcher - as long as the predicate accepts a value of the type you want. You do
-this by wrapping the predicate inside the `Truly()` function, for example:
+gMock provides a [built-in set](cheat_sheet.md#MatcherList) of matchers. In case
+you find them lacking, you can use an arbitrary unary predicate function or
+functor as a matcher - as long as the predicate accepts a value of the type you
+want. You do this by wrapping the predicate inside the `Truly()` function, for
+example:
 
 ```cpp
 using ::testing::Truly;
@@ -2126,7 +2131,7 @@ class MockFoo : public Foo {
   DefaultValue<Bar>::Clear();
 ```
 
-Please note that changing the default value for a type can make you tests hard
+Please note that changing the default value for a type can make your tests hard
 to understand. We recommend you to use this feature judiciously. For example,
 you may want to make sure the `Set()` and `Clear()` calls are right next to the
 code that uses your mock.

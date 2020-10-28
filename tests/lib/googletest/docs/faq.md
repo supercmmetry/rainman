@@ -2,7 +2,13 @@
 
 <!-- GOOGLETEST_CM0014 DO NOT DELETE -->
 
+<!-- GOOGLETEST_CM0035 DO NOT DELETE -->
+
 ## Why should test suite names and test names not contain underscore?
+
+Note: Googletest reserves underscore (`_`) for special purpose keywords, such as
+[the `DISABLED_` prefix](advanced.md#temporarily-disabling-tests), in addition
+to the following rationale.
 
 Underscore (`_`) is special, as C++ reserves the following to be used by the
 compiler and the standard library:
