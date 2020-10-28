@@ -16,7 +16,6 @@ namespace rainman {
         uint64_t allocation_size;
         uint64_t n_allocations;
         uint64_t peak_size;
-        uint64_t leak_counter;
         memmap *memmap;
         memmgr *parent;
         std::unordered_map<memmgr *, bool> children;
@@ -85,6 +84,11 @@ namespace rainman {
             if (elem != nullptr) {
                 update(allocation_size - elem->alloc_size, n_allocations - 1);
                 memmap->remove_by_type<Type>(ptr);
+            } else {
+                for (auto &entry: children) {
+                    auto child = entry.first;
+                    child->r_free(ptr);
+                }
             }
 
             unlock();
@@ -101,6 +105,8 @@ namespace rainman {
         uint64_t get_alloc_count();
 
         uint64_t get_alloc_size();
+
+        void print_mem_trace();
 
         uint64_t get_peak_size();
 

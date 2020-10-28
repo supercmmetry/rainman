@@ -1,3 +1,5 @@
+#include <iostream>
+#include <iomanip>
 #include "memmgr.h"
 
 rainman::memmgr::memmgr(uint64_t map_size) {
@@ -90,4 +92,28 @@ void rainman::memmgr::unregister() {
 
 rainman::memmgr *rainman::memmgr::get_parent() {
     return parent;
+}
+
+void rainman::memmgr::print_mem_trace() {
+    lock();
+
+    std::cout << "Rainman Memory Trace:" << std::endl << std::endl;
+    std::cout << std::setw(40) << std::left << "Type name (RTTI)"
+              << std::setw(20) << std::left << "Allocation size" << std::endl;
+
+    auto iter = memmap->iterptr;
+
+    while (iter != nullptr) {
+        std::cout << std::setw(40) << std::left << iter->type_name
+                  << std::setw(20) << std::left << std::to_string(iter->alloc_size) + " bytes" << std::endl;
+
+        iter = iter->prev_iter;
+    }
+
+    std::cout << std::endl;
+    std::cout << "Overall stats: " << std::endl << std::endl;
+    std::cout << "Allocation size: " << allocation_size << " bytes" << std::endl;
+    std::cout << "Allocation count: " << n_allocations << std::endl;
+
+    unlock();
 }
