@@ -35,6 +35,8 @@ namespace rainman {
 
         map_elem *get(void *ptr);
 
+#pragma clang diagnostic ignored "-Wdelete-incomplete"
+#pragma GCC diagnostic ignored "-Wdelete-incomplete"
         template<typename Type>
         void remove_by_type(Type ptr) {
             delete[] ptr;
