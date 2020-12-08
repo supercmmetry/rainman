@@ -41,8 +41,8 @@
     return _instance;                                                   \
 }()
 
-#define rscope(Code) {                                                  \
-       class _rainman_safe_scope : public rainman::module {             \
+#define rarena(Code) {                                                  \
+       class _rainman_safe_scope : public rainman::arena {             \
        public:                                                          \
             void run() {                                                \
                 Code                                                    \
@@ -240,9 +240,9 @@ namespace rainman {
     };
 
     // Memory-module (A memory leak free class in which all rainman allocations are freed upon destruction)
-    class module : public context {
+    class arena : public context {
     protected:
-        ~module() {
+        ~arena() {
             rwipe;
             rmemmgr->unregister();
             delete rmemmgr;

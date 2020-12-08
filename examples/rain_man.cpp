@@ -275,7 +275,7 @@ public:
 
 class RainMan4 : public rainman::context {
 private:
-    class SubClass : public rainman::module {
+    class SubClass : public rainman::arena {
     public:
         SubClass(int x) {
             std::cout << "SubClass constructor called with value: " << x << std::endl;
@@ -317,7 +317,7 @@ public:
     void run() {
         std::cout << "--- Start example 5 ---" << std::endl;
 
-        rscope(
+        rarena(
                 int *x = rmalloc(int, 3);
 
                 for (int i = 0; i < 3; i++) {
@@ -327,7 +327,7 @@ public:
         )
 
         // You can use as many leak-free scopes as you want.
-        rscope(
+        rarena(
                 auto *y = rnew(double);
                 auto *h = rmalloc(double, 1048576);
                 auto *z = rmalloc(RainMan5, 10);

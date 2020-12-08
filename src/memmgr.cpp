@@ -3,7 +3,6 @@
 #include "memmgr.h"
 
 rainman::memmgr::memmgr(uint64_t map_size) {
-    sem_init(&mutex, 0, 1);
     memmap = new rainman::memmap(map_size);
     n_allocations = 0;
     allocation_size = 0;
@@ -64,11 +63,11 @@ void rainman::memmgr::update(uint64_t alloc_size, uint64_t alloc_count) {
 }
 
 void rainman::memmgr::lock() {
-    sem_wait(&mutex);
+    mutex.lock();
 }
 
 void rainman::memmgr::unlock() {
-    sem_post(&mutex);
+    mutex.unlock();
 }
 
 rainman::memmgr *rainman::memmgr::create_child_mgr() {

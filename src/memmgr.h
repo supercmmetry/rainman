@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstring>
 #include <semaphore.h>
+#include <mutex>
 #include <vector>
 #include <unordered_map>
 #include <typeinfo>
@@ -19,7 +20,7 @@ namespace rainman {
         memmap *memmap;
         memmgr *parent;
         std::unordered_map<memmgr *, bool> children;
-        sem_t mutex{};
+        std::mutex mutex{};
 
         void lock();
 
@@ -31,11 +32,9 @@ namespace rainman {
         memmgr(uint64_t map_size = 0xffff);
 
         ~memmgr() {
-            sem_wait(&mutex);
-
+            lock();
             delete memmap;
-
-            sem_post(&mutex);
+            unlock();
         }
 
         template<typename Type>
