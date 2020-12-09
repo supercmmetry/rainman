@@ -164,106 +164,6 @@ public:
     }
 };
 
-class RainMan3 : public rainman::context {
-private:
-    class SubClass : public rainman::context {
-    public:
-        void run() {
-            int *another_array = rmalloc(int, 100);
-
-            // We wrap 'another_array' in a rainman smart pointer.
-            // This automatically de-allocates 'another_array' when smart_ptr
-            // goes out of scope.
-            // The memory manager is automatically attached.
-
-            auto sptr = rainptr(another_array);
-
-            // If you are not inheriting rainman::context, then you can create a smart pointer like this.
-            // But the memory manager needs to be attached manually.
-            auto another_sptr = rainman::pointer<int>(rmemmgr);
-
-            // NOTE: It is unsafe to create more than one smart pointer wrapping a single pointer. This breaks the
-            // reference-counting mechanism and can lead to unnecessary de-allocations leading to a classic
-            // segmentation fault. To create more smart pointers wrapping the same pointer,
-            // please use the copy constructor.
-
-            // Also supports reference-counting.
-            {
-                auto dptr = sptr;
-            }
-
-            // Create an array pointer wrapped with smart pointer in one line.
-
-            sptr = rainptr_m(int, 10);
-
-            // Operator overload for subscripting
-            sptr[0] = 100;
-
-            // In addition to this, you can also create smart pointers directly from types.
-
-            auto number = rainptr_t(double);
-
-            *number = 123.456;
-
-            std::cout << "Number: " << *number << std::endl;
-
-            // Last but not the least, these smart-pointers are thread-safe.
-            // However, this does not mean that the underlying pointer is thread-safe!
-
-            std::vector<std::thread *> threads;
-
-            for (int i = 0; i < 10; i++) {
-                auto thread = new std::thread([&sptr, i]() {
-                    sptr[i] = i;
-                });
-
-                threads.push_back(thread);
-            }
-
-            for (auto &thread : threads) {
-                thread->join();
-                delete thread;
-            }
-
-            for (int i = 0; i < 10; i++) {
-                std::cout << "sptr[" << i << "] = " << sptr[i] << std::endl;
-            }
-
-        }
-    };
-
-
-public:
-    void run() {
-        // Allocate objects using rainman macros
-        SubClass *obj = rnew(SubClass);
-
-        std::cout << "--- Start example 3 ---" << std::endl;
-
-        // Attach RainMan1's memory manager to 'obj'.
-        rinitptr(obj);
-
-        /*
-         * If you need to attach a memory manager to a non-pointer type use rinit.
-         */
-
-        obj->run();
-        rfree(obj);
-
-        // View allocation information
-        // Notice that the stuff allocated inside obj->run() was de-allocated without
-        // any manual intervention.
-
-        auto mgr = rmemmgr; // Gets the memory manager in the current context.
-
-
-        std::cout << "Allocation size in bytes: " << mgr->get_alloc_size() << std::endl;
-        std::cout << "Allocation count        : " << mgr->get_alloc_count() << std::endl;
-        std::cout << "--- End example 3 ---" << std::endl;
-    }
-};
-
-
 /*
  * Create a memory-leak free object using rainman modules. All allocations in a rainman module are de-allocated
  * automatically.
@@ -273,7 +173,7 @@ public:
  *
  */
 
-class RainMan4 : public rainman::context {
+class RainMan3 : public rainman::context {
 private:
     class SubClass : public rainman::arena {
     public:
@@ -290,7 +190,7 @@ private:
 
 public:
     void run() {
-        std::cout << "--- Start example 4 ---" << std::endl;
+        std::cout << "--- Start example 3 ---" << std::endl;
 
         // We use the rmod macro to create a rainman module.
         // Format: rmod(Class, constructor parameters)
@@ -304,7 +204,7 @@ public:
         // Notice that we have zero allocations. No more memory leaks!
         std::cout << "Allocation size in bytes: " << rmemmgr->get_alloc_size() << std::endl;
         std::cout << "Allocation count        : " << rmemmgr->get_alloc_count() << std::endl;
-        std::cout << "--- End example 4 ---" << std::endl;
+        std::cout << "--- End example 3 ---" << std::endl;
     }
 };
 
@@ -312,10 +212,10 @@ public:
  * Run code in a memory-leak free scope.
  */
 
-class RainMan5 : public rainman::context {
+class RainMan4 : public rainman::context {
 public:
     void run() {
-        std::cout << "--- Start example 5 ---" << std::endl;
+        std::cout << "--- Start example 4 ---" << std::endl;
 
         rarena(
                 int *x = rmalloc(int, 3);
@@ -330,7 +230,7 @@ public:
         rarena(
                 auto *y = rnew(double);
                 auto *h = rmalloc(double, 1048576);
-                auto *z = rmalloc(RainMan5, 10);
+                auto *z = rmalloc(RainMan4, 10);
 
                 // For some STL types, rainman fails to de-allocate the object properly without type information.
                 // These objects have to be manually destroyed, otherwise SIGABRT is thrown.
@@ -341,7 +241,7 @@ public:
 
         std::cout << "Allocation size in bytes: " << rmemmgr->get_alloc_size() << std::endl;
         std::cout << "Allocation count        : " << rmemmgr->get_alloc_count() << std::endl;
-        std::cout << "--- End example 5 ---" << std::endl;
+        std::cout << "--- End example 4 ---" << std::endl;
     }
 };
 
@@ -366,11 +266,6 @@ int main() {
     auto example4 = RainMan4();
     rinitfrom(mgr, example4);
     example4.run();
-    mgr->wipe<void>();
-
-    auto example5 = RainMan5();
-    rinitfrom(mgr, example5);
-    example5.run();
     mgr->wipe<void>();
 
     delete mgr;
