@@ -83,6 +83,12 @@ namespace rainman {
             if (elem != nullptr) {
                 update(allocation_size - elem->alloc_size, n_allocations - 1);
                 memmap->remove_by_type<Type>(ptr);
+            } else {
+                unlock();
+                for (auto child : children) {
+                    child.first->r_free(ptr);
+                }
+                lock();
             }
 
             unlock();

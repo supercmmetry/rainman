@@ -13,6 +13,15 @@ namespace MemoryErrors {
             return "rainman: Peak limit reached";
         }
     };
+
+    class SegmentationFaultException : public std::exception {
+    public:
+        SegmentationFaultException() = default;
+
+        [[nodiscard]] const char *what() const noexcept override {
+            return "rainman: Segmentation fault";
+        }
+    };
 }
 
 
