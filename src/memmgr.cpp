@@ -24,7 +24,7 @@ void rainman::memmgr::set_peak(uint64_t _peak_size) {
 
 uint64_t rainman::memmgr::get_alloc_count() {
     lock();
-    int n = n_allocations;
+    auto n = n_allocations;
     unlock();
 
     return n;
@@ -32,7 +32,7 @@ uint64_t rainman::memmgr::get_alloc_count() {
 
 uint64_t rainman::memmgr::get_alloc_size() {
     lock();
-    int size = allocation_size;
+    auto size = allocation_size;
     unlock();
 
     return size;
@@ -44,7 +44,7 @@ void rainman::memmgr::set_parent(rainman::memmgr *p) {
 
 uint64_t rainman::memmgr::get_peak_size() {
     lock();
-    int size = peak_size;
+    auto size = peak_size;
     unlock();
 
     return size;
@@ -72,9 +72,9 @@ void rainman::memmgr::unlock() {
 
 rainman::memmgr *rainman::memmgr::create_child_mgr() {
     auto *mgr = new rainman::memmgr;
-    mgr->parent = this;
 
     lock();
+    mgr->parent = this;
     children[mgr] = true;
     unlock();
 

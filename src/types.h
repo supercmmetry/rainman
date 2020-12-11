@@ -54,4 +54,12 @@ namespace rainman {
         }
     };
 
+
+    /*
+     * virtual_array only supports primitives. Using other types can introduce undefined behaviour.
+     */
+    template <class T>
+    class virtual_array {
+
+    };
 }

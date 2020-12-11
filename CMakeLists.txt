@@ -12,7 +12,7 @@ add_library(rainman STATIC
         src/memmgr.h
         src/memmgr.cpp
         src/memmap.h
-        src/memmap.cpp src/context.h src/types.h src/global.h)
+        src/memmap.cpp src/context.h src/types.h src/global.h src/cache.h src/cache.cpp)
 
 add_subdirectory(examples)
 

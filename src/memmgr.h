@@ -14,12 +14,12 @@
 namespace rainman {
     class memmgr {
     private:
-        uint64_t allocation_size;
-        uint64_t n_allocations;
-        uint64_t peak_size;
-        memmap *memmap;
-        memmgr *parent;
-        std::unordered_map<memmgr *, bool> children;
+        uint64_t allocation_size{};
+        uint64_t n_allocations{};
+        uint64_t peak_size{};
+        memmap *memmap{};
+        memmgr *parent{};
+        std::unordered_map<memmgr *, bool> children{};
         std::mutex mutex{};
 
         void lock();
