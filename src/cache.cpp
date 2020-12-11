@@ -23,7 +23,7 @@ uint8_t rainman::cache::get_byte(uint64_t index) {
     }
 }
 
-uint8_t rainman::cache::set_byte(uint8_t byte, uint64_t index) {
+void rainman::cache::set_byte(uint8_t byte, uint64_t index) {
     auto offset = index / page_size;
     auto page_index = index % page_size;
     if (offset == page_offset) {
