@@ -1,6 +1,7 @@
 #include "memmgr.h"
 #include "global.h"
 #include "errors.h"
+#include "cache.h"
 
 /*
  * Context-less wrappers for memory allocation. Uses the rainman global memory manager.
@@ -56,10 +57,31 @@ namespace rainman {
 
 
     /*
-     * virtual_array only supports primitives. Using other types can introduce undefined behaviour.
+     * virtual_array only supports primitives and 1-byte packed structs.
+     * Using other types can introduce undefined behaviour. The subscripting operator
+     * can only be used for reading purposes. For writing to an index use set().
      */
-    template <class T>
+    template<class T>
     class virtual_array {
+    private:
+        cache *_cache{};
+        uint64_t index{};
+    public:
+        virtual_array(cache *_cache, uint64_t n) {
+            this->_cache = _cache;
+            index = _cache->allocate<T>(n);
+        }
 
+        T operator[](uint64_t i) {
+            return _cache->read<T>(index + sizeof(T) * i);
+        }
+
+        void set(T obj, uint64_t i) {
+            _cache->write(obj, index + sizeof(T) * i);
+        }
+
+        ~virtual_array() {
+            _cache->deallocate(index);
+        }
     };
 }

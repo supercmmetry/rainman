@@ -2,6 +2,7 @@
 #include <memmgr.h>
 #include <cache.h>
 #include <vector>
+#include <types.h>
 
 class MemoryTest : public testing::Test {
 };
@@ -185,5 +186,24 @@ TEST(MemoryTest, rainman_cache_5) {
     ASSERT_EQ(cache.read<int>(index2), 431);
 
     ASSERT_EQ(index1, index2);
+}
+
+TEST(MemoryTest, rainman_virtual_array_1) {
+    remove("cache.rain");
+    auto tmp = fopen("cache.rain", "a");
+    fclose(tmp);
+
+    auto cache_file = fopen("cache.rain", "rb+");
+    auto cache = new rainman::cache(cache_file, 2);
+
+    auto arr = rainman::virtual_array<int>(cache, 1024);
+
+    for (int i = 0; i < 1024; i++) {
+        arr.set(i, i);
+    }
+
+    for (int i = 0; i < 1024; i++) {
+        ASSERT_EQ(arr[i], i);
+    }
 }
 

@@ -105,6 +105,11 @@ namespace rainman {
             }
             mutex.unlock();
         }
+
+        ~cache() {
+            delete[] page;
+            fclose(page_file);
+        }
     };
 }
 
