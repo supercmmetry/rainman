@@ -1,6 +1,8 @@
 #ifndef RAINMAN_CONTEXT_H
 #define RAINMAN_CONTEXT_H
 
+#ifdef RAINMAN_USE_DEPRECATED_API
+
 #include "memmgr.h"
 
 #define rmalloc(type, n_elems) this->_rain_man_memmgr_obj->template r_malloc<type>(n_elems)
@@ -78,4 +80,5 @@ namespace rainman {
     };
 }
 
+#endif
 #endif

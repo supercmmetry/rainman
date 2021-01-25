@@ -3,155 +3,151 @@
 #include "global.h"
 #include "errors.h"
 #include "cache.h"
+#include "utils.h"
 
 /*
- * Context-less wrappers for memory allocation. Uses the rainman global memory manager.
+ * Context-less wrappers for memory allocation. Uses the rainman global memory manager by default.
  * These types are not thread-safe.
  */
 
 namespace rainman {
-
-    class ReferenceCounter {
-    private:
-        uint64_t *_refs{};
-        std::mutex *_mutex{};
-
-        void _destroy() {
-            _mutex->lock();
-
-            if (*_refs == 0) {
-                delete _refs;
-                delete _mutex;
-            } else {
-                *_refs = *_refs - 1;
-                _mutex->unlock();
-            }
-        }
-
-    protected:
-        void increment() {
-            _mutex->lock();
-            *_refs = *_refs + 1;
-            _mutex->unlock();
-        }
-
-        void decrement() {
-            _destroy();
-        }
-
-        uint64_t refs() {
-            _mutex->lock();
-            auto val = *_refs;
-            _mutex->unlock();
-            return val;
-        }
-
-        void copy_ref(const ReferenceCounter &copy, bool destroy = false) {
-            if (this != &copy) {
-                copy._mutex->lock();
-                if (destroy) {
-                    _destroy();
-                }
-                _refs = copy._refs;
-                _mutex = copy._mutex;
-                *_refs = *_refs + 1;
-                copy._mutex->unlock();
-            }
-        }
-
-    public:
-        ReferenceCounter() {
-            _refs = new uint64_t;
-            _mutex = new std::mutex;
-            *_refs = 0;
-        }
-
-        ReferenceCounter(const ReferenceCounter &copy) {
-            copy_ref(copy);
-        }
-
-        ~ReferenceCounter() {
-            _destroy();
-        }
-    };
-
     template<class T>
-    class ptr : public ReferenceCounter {
+    class ptr : private ReferenceCounter {
     private:
         T *_inner;
         uint64_t _n{};
-        memmgr *_mgr;
+        uint64_t _offset{};
+        Allocator _allocator{};
+
     public:
-        ptr(uint64_t n_elems, memmgr *mgr = &rglobalmgr) : _mgr(mgr) {
-            _inner = _mgr->r_malloc<T>(n_elems);
+        ptr(const Allocator &allocator = Allocator()): _allocator(allocator) {
+            _inner = _allocator.rnew<T>();
+            _n = 1;
+        }
+
+        ptr(uint64_t n_elems, const Allocator &allocator = Allocator()): _allocator(allocator) {
+            _inner = _allocator.rmalloc<T>(n_elems);
             _n = n_elems;
         }
 
-        ptr(T *inner, uint64_t n_elems, memmgr *mgr = &rglobalmgr) : _mgr(mgr) {
+        ptr(T *inner, uint64_t n_elems, const Allocator &allocator = Allocator()) : _allocator(allocator) {
             _inner = inner;
             _n = n_elems;
         }
 
-        ptr(ptr<T> &copy) : ReferenceCounter(copy) {
+        ptr(ptr<T> &copy) : ReferenceCounter(copy), _allocator(copy._allocator) {
             _inner = copy._inner;
             _n = copy._n;
-            _mgr = copy._mgr;
+            _offset = copy._offset;
         }
 
         ptr<T> &operator=(const ptr<T> &rhs) {
             if (this != &rhs) {
-                copy_ref(rhs, true);
-                _mgr->r_free(_inner);
+                ReferenceCounter::copy(*this, rhs, true);
+                _allocator.rfree(_inner);
                 _inner = rhs._inner;
                 _n = rhs._n;
-                _mgr = rhs._mgr;
+                _offset = rhs._offset;
+                _allocator = rhs._allocator;
             }
 
             return *this;
         }
 
         T &operator[](uint64_t index) {
-            if (index >= _n) {
+            auto idx = index + _offset;
+            if (idx >= _n || idx < 0) {
                 throw MemoryErrors::SegmentationFaultException();
             }
 
-            return _inner[index];
+            return (_inner + _offset)[index];
+        }
+
+        T &operator*() {
+            if (_n == 0) {
+                throw MemoryErrors::SegmentationFaultException();
+            }
+
+            return *(_inner + _offset);
+        }
+
+        T *operator->() {
+            if (_n == 0) {
+                throw MemoryErrors::SegmentationFaultException();
+            }
+
+            return _inner + _offset;
+        }
+
+        ptr &operator++() {
+            if (_offset == _n - 1) {
+                throw MemoryErrors::SegmentationFaultException();
+            }
+
+            _offset++;
+            return *this;
+        }
+
+        ptr &operator--() {
+            if (_offset == 0) {
+                throw MemoryErrors::SegmentationFaultException();
+            }
+
+            _offset--;
+            return *this;
         }
 
         ~ptr() {
-            if (refs() == 0) {
-                _mgr->r_free(_inner);
+            if (!refs()) {
+                _allocator.rfree(_inner);
             }
         }
     };
 
 
     /*
-     * virtual_array only supports primitives and 1-byte packed structs.
-     * Using other types can introduce undefined behaviour. The subscripting operator
-     * can only be used for reading purposes. For writing to an index use set().
+     * virtual_array takes a rainman::cache and maps an array to it.
+     * The subscripting operator can only be used for reading purposes.
+     * For writing to an index use set().
      */
     template<class T>
-    class virtual_array {
+    class virtual_array : public ReferenceCounter {
     private:
-        cache *_cache{};
+        cache _cache{};
         uint64_t _index{};
     public:
-        virtual_array(cache *cache, uint64_t n) {
+        virtual_array(const cache &cache, uint64_t n) {
             this->_cache = cache;
-            _index = _cache->allocate<T>(n);
+            _index = _cache.allocate<T>(n);
+        }
+
+        virtual_array(const virtual_array &copy) : ReferenceCounter(copy) {
+            _cache = copy._cache;
+            _index = copy._index;
+        }
+
+        virtual_array &operator=(const virtual_array &rhs) {
+            if (this != &rhs) {
+                ref_copy(rhs, true);
+                _cache = rhs._cache;
+                _index = rhs._index;
+            }
+
+            return *this;
         }
 
         T operator[](uint64_t i) {
-            return _cache->read<T>(_index + sizeof(T) * i);
+            return _cache.read<T>(_index + sizeof(T) * i);
         }
 
         void set(T obj, uint64_t i) {
-            _cache->write(obj, _index + sizeof(T) * i);
+            _cache.write(obj, _index + sizeof(T) * i);
         }
 
         ~virtual_array() {
-            _cache->deallocate(_index);
+            if (!refs()) {
+                _cache.deallocate(_index);
+            }
         }
     };
 }

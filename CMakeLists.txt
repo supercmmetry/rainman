@@ -17,7 +17,7 @@ add_library(rainman STATIC
         src/types.h
         src/global.h
         src/cache.h
-        src/cache.cpp)
+        src/cache.cpp src/utils.h)
 
 add_subdirectory(examples)
 

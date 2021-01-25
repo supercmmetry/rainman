@@ -6,37 +6,46 @@
 #include <mutex>
 #include <vector>
 #include <unordered_map>
+#include "utils.h"
+#include "global.h"
 
 namespace rainman {
-    class cache {
+    class cache : public ReferenceCounter {
     private:
         struct cache_fragment {
             uint64_t index;
             uint64_t length;
         };
 
-        FILE *page_file;
+        FILE *page_file{};
         uint64_t page_size{};
         uint64_t page_offset{};
         uint8_t *page{};
         uint64_t eof{};
-        std::mutex mutex;
+        std::mutex *mutex{};
 
         std::vector<cache_fragment> fragments;
         std::unordered_map<uint64_t, uint64_t> lenmap;
+        Allocator _allocator{};
 
         uint8_t get_byte(uint64_t index);
 
         void set_byte(uint8_t byte, uint64_t index);
 
     public:
-        cache(FILE *fp, uint64_t size);
+        cache() = default;
+
+        cache(FILE *fp, uint64_t size, const Allocator &allocator = Allocator());
+
+        cache(const cache &copy);
+
+        cache &operator=(const cache &rhs);
 
         template <typename T>
         uint64_t allocate(uint64_t n) {
             uint64_t size = n * sizeof(T);
 
-            mutex.lock();
+            mutex->lock();
 
             bool found_fragment = false;
             uint64_t alloc_index = 0;
@@ -64,33 +73,33 @@ namespace rainman {
             }
 
             lenmap[alloc_index] = size;
-            mutex.unlock();
+            mutex->unlock();
 
             return alloc_index;
         }
 
         void deallocate(uint64_t index) {
-            mutex.lock();
+            mutex->lock();
             fragments.push_back(cache_fragment{
                 .index=index,
                 .length=lenmap[index]
             });
 
             lenmap.erase(index);
-            mutex.unlock();
+            mutex->unlock();
         }
 
         // Read an object from the cache at a byte-index.
         // Note: This only works for primitives and 1-byte packed structs.
         template<typename T>
         T read(uint64_t index) {
-            mutex.lock();
+            mutex->lock();
             uint8_t data[sizeof(T)];
             for (uint64_t i = 0; i < sizeof(T); i++) {
                 data[i] = get_byte(index + i);
             }
 
-            mutex.unlock();
+            mutex->unlock();
             return *(T*)data;
         }
 
@@ -98,17 +107,19 @@ namespace rainman {
         // Note: This only works for primitives and 1-byte packed structs.
         template<typename T>
         void write(T obj, uint64_t index) {
-            mutex.lock();
+            mutex->lock();
             auto data = (uint8_t *) &obj;
             for (uint64_t i = 0; i < sizeof(T); i++) {
                 set_byte(data[i], index + i);
             }
-            mutex.unlock();
+            mutex->unlock();
         }
 
         ~cache() {
-            delete[] page;
-            fclose(page_file);
+            if (!refs()) {
+                _allocator.rfree(page);
+                fclose(page_file);
+            }
         }
     };
 }

@@ -1,4 +1,8 @@
 project(rain_man_examples)
 
-add_executable(rainman_example rain_man.cpp)
-target_link_libraries(rainman_example pthread rainman)
+add_executable(rainman_deprecated_example rain_man__deprecated.cpp)
+target_link_libraries(rainman_deprecated_example pthread rainman)
+target_compile_definitions(rainman_deprecated_example PUBLIC RAINMAN_USE_DEPRECATED_API)
+
+add_executable(rainman_modern_example rainman_modern.cpp)
+target_link_libraries(rainman_modern_example pthread rainman)

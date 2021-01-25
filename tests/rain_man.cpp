@@ -194,15 +194,15 @@ TEST(MemoryTest, rainman_virtual_array_1) {
     fclose(tmp);
 
     auto cache_file = fopen("cache.rain", "rb+");
-    auto cache = new rainman::cache(cache_file, 2);
+    auto cache = rainman::cache(cache_file, 0x2000);
 
-    auto arr = rainman::virtual_array<int>(cache, 1024);
+    auto arr = rainman::virtual_array<int>(cache, 1048576);
 
-    for (int i = 0; i < 1024; i++) {
+    for (int i = 0; i < 1048576; i++) {
         arr.set(i, i);
     }
 
-    for (int i = 0; i < 1024; i++) {
+    for (int i = 0; i < 1048576; i++) {
         ASSERT_EQ(arr[i], i);
     }
 }
@@ -225,10 +225,9 @@ TEST(MemoryTest, rainman_pointer_2) {
         auto z = rainman::ptr<int>(10);
         z[0] = 13;
         z = p;
-        z[0] = 12;
+        *z = 12;
     }
 
     ASSERT_EQ(p[0], 12);
-    rglobalmgr.print_mem_trace();
 }
 
