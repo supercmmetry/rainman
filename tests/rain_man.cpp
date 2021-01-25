@@ -207,3 +207,28 @@ TEST(MemoryTest, rainman_virtual_array_1) {
     }
 }
 
+TEST(MemoryTest, rainman_pointer_1) {
+    auto p = rainman::ptr<int>(20);
+
+    {
+        auto z = p;
+        z[0] = 12;
+    }
+
+    ASSERT_EQ(p[0], 12);
+}
+
+TEST(MemoryTest, rainman_pointer_2) {
+    auto p = rainman::ptr<int>(20);
+
+    {
+        auto z = rainman::ptr<int>(10);
+        z[0] = 13;
+        z = p;
+        z[0] = 12;
+    }
+
+    ASSERT_EQ(p[0], 12);
+    rglobalmgr.print_mem_trace();
+}
+
