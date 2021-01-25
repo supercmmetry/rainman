@@ -1,8 +1,6 @@
 #include "gtest/gtest.h"
-#include <memmgr.h>
-#include <cache.h>
 #include <vector>
-#include <types.h>
+#include <rainman/rainman.h>
 
 class MemoryTest : public testing::Test {
 };

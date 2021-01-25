@@ -1,4 +1,4 @@
-#include <rainman.h>
+#include <rainman/rainman.h>
 #include <iostream>
 #include <vector>
 #include <thread>

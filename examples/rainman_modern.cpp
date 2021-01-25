@@ -1,4 +1,4 @@
-#include <rainman.h>
+#include <rainman/rainman.h>
 #include <iostream>
 
 class ModernRainMan1 : public rainman::Allocator {
