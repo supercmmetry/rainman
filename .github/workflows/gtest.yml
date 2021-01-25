@@ -23,7 +23,7 @@ jobs:
       - name: Compile tests
         run: |
           cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang .
-          make gtest_run
+          make rainman_test
 
       - name: Run tests
-        run: bin/gtest_run
+        run: bin/rainman_test
