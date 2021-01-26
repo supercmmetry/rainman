@@ -89,6 +89,14 @@ namespace rainman {
             return _inner + _offset;
         }
 
+        T *pointer() {
+            return _inner + _offset;
+        }
+
+        T *inner() {
+            return _inner;
+        }
+
         ptr &operator++() {
             if (_offset == _n - 1) {
                 throw MemoryErrors::SegmentationFaultException();
