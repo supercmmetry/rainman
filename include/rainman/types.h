@@ -97,6 +97,10 @@ namespace rainman {
             return *this;
         }
 
+        uint64_t length() {
+            return _n;
+        }
+
         ~ptr() {
             if (!refs()) {
                 _allocator.rfree(_inner);
@@ -115,10 +119,12 @@ namespace rainman {
     private:
         cache _cache{};
         uint64_t _index{};
+        uint64_t _n{};
     public:
         virtual_array(const cache &cache, uint64_t n) {
             this->_cache = cache;
             _index = _cache.allocate<T>(n);
+            _n = n;
         }
 
         virtual_array(const virtual_array &copy) : ReferenceCounter(copy) {
@@ -142,6 +148,10 @@ namespace rainman {
 
         void set(T obj, uint64_t i) {
             _cache.write(obj, _index + sizeof(T) * i);
+        }
+
+        uint64_t length() {
+            return _n;
         }
 
         ~virtual_array() {
