@@ -1,4 +1,6 @@
-#include <mutex>
+#ifndef RAINMAN_TYPES_H
+#define RAINMAN_TYPES_H
+
 #include "memmgr.h"
 #include "global.h"
 #include "errors.h"
@@ -161,3 +163,5 @@ namespace rainman {
         }
     };
 }
+
+#endif
