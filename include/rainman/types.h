@@ -10,40 +10,41 @@
 /*
  * Context-less wrappers for memory allocation. Uses the rainman global memory manager by default.
  * These types are not thread-safe.
+ * Also includes some wrappers for making things easier.
  */
 
 namespace rainman {
-    template<class T>
+    template<class Type>
     class ptr : private ReferenceCounter {
     private:
-        T *_inner;
+        Type *_inner;
         uint64_t _n{};
         uint64_t _offset{};
         Allocator _allocator{};
 
     public:
-        ptr(const Allocator &allocator = Allocator()): _allocator(allocator) {
-            _inner = _allocator.rnew<T>();
+        ptr(const Allocator &allocator = Allocator()) : _allocator(allocator) {
+            _inner = _allocator.rnew<Type>();
             _n = 1;
         }
 
-        ptr(uint64_t n_elems, const Allocator &allocator = Allocator()): _allocator(allocator) {
-            _inner = _allocator.rmalloc<T>(n_elems);
+        ptr(uint64_t n_elems, const Allocator &allocator = Allocator()) : _allocator(allocator) {
+            _inner = _allocator.rmalloc<Type>(n_elems);
             _n = n_elems;
         }
 
-        ptr(T *inner, uint64_t n_elems, const Allocator &allocator = Allocator()) : _allocator(allocator) {
+        ptr(Type *inner, uint64_t n_elems, const Allocator &allocator = Allocator()) : _allocator(allocator) {
             _inner = inner;
             _n = n_elems;
         }
 
-        ptr(ptr<T> &copy) : ReferenceCounter(copy), _allocator(copy._allocator) {
+        ptr(ptr<Type> &copy) : ReferenceCounter(copy), _allocator(copy._allocator) {
             _inner = copy._inner;
             _n = copy._n;
             _offset = copy._offset;
         }
 
-        ptr<T> &operator=(const ptr<T> &rhs) {
+        ptr<Type> &operator=(const ptr<Type> &rhs) {
             if (this != &rhs) {
                 ReferenceCounter::copy(*this, rhs, true);
                 _allocator.rfree(_inner);
@@ -56,15 +57,16 @@ namespace rainman {
             return *this;
         }
 
-        ptr<T> &operator=(const T &rhs) const {
+        ptr<Type> &operator=(const Type &rhs) const {
             if (_n == 0) {
                 throw MemoryErrors::SegmentationFaultException();
             }
 
             *(_inner + _offset) = rhs;
+            return *this;
         }
 
-        T &operator[](uint64_t index) const {
+        Type &operator[](uint64_t index) const {
             auto idx = index + _offset;
             if (idx >= _n || idx < 0) {
                 throw MemoryErrors::SegmentationFaultException();
@@ -73,7 +75,7 @@ namespace rainman {
             return (_inner + _offset)[index];
         }
 
-        T &operator*() const {
+        Type &operator*() const {
             if (_n == 0) {
                 throw MemoryErrors::SegmentationFaultException();
             }
@@ -81,7 +83,7 @@ namespace rainman {
             return *(_inner + _offset);
         }
 
-        T *operator->() const {
+        Type *operator->() const {
             if (_n == 0) {
                 throw MemoryErrors::SegmentationFaultException();
             }
@@ -89,11 +91,11 @@ namespace rainman {
             return _inner + _offset;
         }
 
-        T *pointer() const {
+        Type *pointer() const {
             return _inner + _offset;
         }
 
-        T *inner() const {
+        Type *inner() const {
             return _inner;
         }
 
@@ -126,13 +128,12 @@ namespace rainman {
         }
     };
 
-
     /*
      * virtual_array takes a rainman::cache and maps an array to it.
      * The subscripting operator can only be used for reading purposes.
      * For writing to an index use set().
      */
-    template<class T>
+    template<class Type>
     class virtual_array : public ReferenceCounter {
     private:
         cache _cache{};
@@ -141,7 +142,7 @@ namespace rainman {
     public:
         virtual_array(const cache &cache, uint64_t n) {
             this->_cache = cache;
-            _index = _cache.allocate<T>(n);
+            _index = _cache.allocate<Type>(n);
             _n = n;
         }
 
@@ -160,12 +161,12 @@ namespace rainman {
             return *this;
         }
 
-        T operator[](uint64_t i) {
-            return _cache.read<T>(_index + sizeof(T) * i);
+        Type operator[](uint64_t i) {
+            return _cache.read<Type>(_index + sizeof(Type) * i);
         }
 
-        void set(T obj, uint64_t i) {
-            _cache.write(obj, _index + sizeof(T) * i);
+        void set(Type obj, uint64_t i) {
+            _cache.write(obj, _index + sizeof(Type) * i);
         }
 
         uint64_t size() const {
@@ -176,6 +177,128 @@ namespace rainman {
             if (!refs()) {
                 _cache.deallocate(_index);
             }
+        }
+    };
+
+    /*
+     * result is a wrapper for checking whether the received inner-type is valid or not.
+     */
+
+    template<typename LType, typename RType = std::string>
+    class result {
+    private:
+        enum ResultType {
+            Ok,
+            Error
+        };
+
+        ResultType _type = Error;
+        LType _inner;
+        RType _err;
+    public:
+        result() = default;
+
+        static result ok(const LType &inner) {
+            auto v = result();
+            v._type = Ok;
+            v._inner = inner;
+
+            return v;
+        }
+
+        static result err(const RType &err) {
+            auto v = result();
+            v._type = Error;
+            v._err = err;
+
+            return v;
+        }
+
+        result(const result &copy) {
+            _inner = copy._inner;
+            _err = copy._err;
+            _type = copy._type;
+        }
+
+        result &operator=(const result &rhs) {
+            if (this != &rhs) {
+                _inner = rhs._inner;
+                _err = rhs._err;
+                _type = rhs._type;
+            }
+
+            return *this;
+        }
+
+        [[nodiscard]] bool is_ok() const {
+            return _type == Ok;
+        }
+
+        [[nodiscard]] bool is_err() const {
+            return _type == Error;
+        }
+
+        LType &inner() {
+            return _inner;
+        }
+
+        RType &err() {
+            return _err;
+        }
+    };
+
+    /*
+     * option is a wrapper for checking whether the received inner-type exists or not.
+     */
+    template<typename Type>
+    class option {
+    private:
+        enum OptionType {
+            Some,
+            None
+        };
+
+        OptionType _type = None;
+        Type _inner;
+    public:
+        option() = default;
+
+        option(const Type &inner) {
+            _inner = inner;
+            _type = Some;
+        }
+
+        option(const option<Type> &copy) {
+            _inner = copy._inner;
+            _type = copy._type;
+        }
+
+        option<Type> &operator=(const option<Type> &rhs) {
+            if (this != &rhs) {
+                _inner = rhs._inner;
+                _type = rhs._type;
+            }
+
+            return *this;
+        }
+
+        option<Type> &operator=(const Type &rhs) {
+            _inner = rhs;
+            _type = Some;
+
+            return *this;
+        }
+
+        [[nodiscard]] bool is_some() const {
+            return _type == Some;
+        }
+
+        [[nodiscard]] bool is_none() const {
+            return _type == None;
+        }
+
+        Type &inner() {
+            return _inner;
         }
     };
 }

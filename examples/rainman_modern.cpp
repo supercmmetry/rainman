@@ -72,16 +72,55 @@ public:
     }
 };
 
+class ModernRainMan5 {
+public:
+    void run() {
+        auto data = rainman::ptr<int>(10);
+        auto valid_result = rainman::result<rainman::ptr<int>>::ok(data);
+        auto invalid_result = rainman::result<rainman::ptr<int>>::err("error occured");
+
+        if (valid_result.is_ok()) {
+            std::cout << "Result is valid" << std::endl;
+        }
+
+        if (invalid_result.is_err()) {
+            std::cout << "Result is invalid" << std::endl;
+            std::cout << "Error: " << invalid_result.err() << std::endl;
+        }
+    }
+};
+
+class ModernRainMan6 {
+public:
+    void run() {
+        auto data = rainman::ptr<int>(10);
+        auto something = rainman::option<rainman::ptr<int>>(data);
+        auto nothing = rainman::option<rainman::ptr<int>>();
+
+        if (something.is_some()) {
+            std::cout << "Something" << std::endl;
+        }
+
+        if (nothing.is_none()) {
+            std::cout << "Nothing" << std::endl;
+        }
+    }
+};
+
 int main() {
     auto example1 = ModernRainMan1();
     auto example2 = ModernRainMan2();
     auto example3 = ModernRainMan3();
     auto example4 = ModernRainMan4();
+    auto example5 = ModernRainMan5();
+    auto example6 = ModernRainMan6();
 
     example1.run();
     example2.run();
     example3.run();
     example4.run();
+    example5.run();
+    example6.run();
 
     return 0;
 }
