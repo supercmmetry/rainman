@@ -56,7 +56,7 @@ namespace rainman {
             return *this;
         }
 
-        ptr<T> &operator=(const T &rhs) {
+        ptr<T> &operator=(const T &rhs) const {
             if (_n == 0) {
                 throw MemoryErrors::SegmentationFaultException();
             }
@@ -64,7 +64,7 @@ namespace rainman {
             *(_inner + _offset) = rhs;
         }
 
-        T &operator[](uint64_t index) {
+        T &operator[](uint64_t index) const {
             auto idx = index + _offset;
             if (idx >= _n || idx < 0) {
                 throw MemoryErrors::SegmentationFaultException();
@@ -73,7 +73,7 @@ namespace rainman {
             return (_inner + _offset)[index];
         }
 
-        T &operator*() {
+        T &operator*() const {
             if (_n == 0) {
                 throw MemoryErrors::SegmentationFaultException();
             }
@@ -81,7 +81,7 @@ namespace rainman {
             return *(_inner + _offset);
         }
 
-        T *operator->() {
+        T *operator->() const {
             if (_n == 0) {
                 throw MemoryErrors::SegmentationFaultException();
             }
@@ -89,11 +89,11 @@ namespace rainman {
             return _inner + _offset;
         }
 
-        T *pointer() {
+        T *pointer() const {
             return _inner + _offset;
         }
 
-        T *inner() {
+        T *inner() const {
             return _inner;
         }
 
@@ -115,7 +115,7 @@ namespace rainman {
             return *this;
         }
 
-        uint64_t length() {
+        [[nodiscard]] uint64_t size() const {
             return _n;
         }
 
@@ -168,7 +168,7 @@ namespace rainman {
             _cache.write(obj, _index + sizeof(T) * i);
         }
 
-        uint64_t length() {
+        uint64_t size() const {
             return _n;
         }
 
