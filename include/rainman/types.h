@@ -56,6 +56,14 @@ namespace rainman {
             return *this;
         }
 
+        ptr<T> &operator=(const T &rhs) {
+            if (_n == 0) {
+                throw MemoryErrors::SegmentationFaultException();
+            }
+
+            *(_inner + _offset) = rhs;
+        }
+
         T &operator[](uint64_t index) {
             auto idx = index + _offset;
             if (idx >= _n || idx < 0) {
