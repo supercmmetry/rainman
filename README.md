@@ -11,3 +11,8 @@ A lightweight flexible hierarchical memory manager for C++
 - Run code in safe memory-leak proof scopes and modules.
 - Supports memory trace.
 - Virtual arrays
+
+
+## Steps to use
+
+- Add this project as a submodule using `git submodule add git@github.com:supercmmetry/rainman`
