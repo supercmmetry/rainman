@@ -59,6 +59,7 @@ namespace rainman {
 
             elem->ptr = new Type[n_elems];
             elem->alloc_size = n_elems * sizeof(Type);
+            elem->count = n_elems;
             elem->type_name = typeid(Type).name();
             elem->next = nullptr;
 
@@ -72,7 +73,7 @@ namespace rainman {
         }
 
         template<typename Type>
-        void r_free(Type ptr) {
+        void r_free(Type *ptr) {
             if (ptr == nullptr) {
                 return;
             }
@@ -95,10 +96,10 @@ namespace rainman {
         }
 
         template<typename Type, typename ...Args>
-        Type *r_new(Args ...args) {
+        Type *r_new(uint64_t n_elems, Args ...args) {
             lock();
 
-            uint64_t curr_alloc_size = sizeof(Type);
+            uint64_t curr_alloc_size = sizeof(Type) * n_elems;
 
             if (peak_size != 0 && allocation_size + curr_alloc_size > peak_size) {
                 unlock();
@@ -114,10 +115,12 @@ namespace rainman {
 
             auto elem = new map_elem;
 
-            elem->ptr = new Type(std::forward<Args>(args)...);
-            elem->alloc_size = sizeof(Type);
+            elem->alloc_size = n_elems * sizeof(Type);
+            elem->count = n_elems;
+            elem->ptr = operator new[](elem->alloc_size);
             elem->type_name = typeid(Type).name();
             elem->next = nullptr;
+            elem->is_raw = true;
 
             memmap->add(elem);
 
@@ -125,7 +128,13 @@ namespace rainman {
 
             unlock();
 
-            return static_cast<Type*>(elem->ptr);
+            Type *objects = reinterpret_cast<Type*>(elem->ptr);
+
+            for (uint64_t i = 0; i < n_elems; i++) {
+                new(objects + i) Type(std::forward<Args>(args)...);
+            }
+
+            return objects;
         }
 
         void set_peak(uint64_t _peak_size);
@@ -166,10 +175,10 @@ namespace rainman {
                 if (elem != nullptr) {
                     if (strcmp(typeid(Type).name(), typeid(void).name()) == 0) {
                         update(allocation_size - elem->alloc_size, n_allocations - 1);
-                        memmap->remove_by_type<void *>(ptr);
+                        memmap->remove_by_type<void>(ptr);
                     } else if (strcmp(typeid(Type).name(), elem->type_name) == 0) {
                         update(allocation_size - elem->alloc_size, n_allocations - 1);
-                        memmap->remove_by_type<Type *>((Type *) ptr);
+                        memmap->remove_by_type<Type *>(reinterpret_cast<Type *>(ptr));
                     }
                 }
 

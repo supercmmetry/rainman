@@ -82,8 +82,8 @@ namespace rainman {
         }
 
         template<typename Type, typename ...Args>
-        Type *rnew(Args ...args) {
-            return _rainman_mgr->r_new<Type>(std::forward<Args>(args)...);
+        Type *rnew(uint64_t n_elems, Args ...args) {
+            return _rainman_mgr->r_new<Type>(n_elems, std::forward<Args>(args)...);
         }
 
         template<typename Type>

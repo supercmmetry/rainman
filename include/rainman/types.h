@@ -23,14 +23,10 @@ namespace rainman {
         Allocator _allocator{};
 
     public:
-        ptr(const Allocator &allocator = Allocator()) : _allocator(allocator) {
-            _inner = _allocator.rnew<Type>();
-            _n = 1;
-        }
-
-        ptr(uint64_t n_elems, const Allocator &allocator = Allocator()) : _allocator(allocator) {
-            _inner = _allocator.rmalloc<Type>(n_elems);
-            _n = n_elems;
+        ptr(ptr<Type> &copy) : ReferenceCounter(copy), _allocator(copy._allocator) {
+            _inner = copy._inner;
+            _n = copy._n;
+            _offset = copy._offset;
         }
 
         ptr(Type *inner, uint64_t n_elems, const Allocator &allocator = Allocator()) : _allocator(allocator) {
@@ -38,10 +34,26 @@ namespace rainman {
             _n = n_elems;
         }
 
-        ptr(ptr<Type> &copy) : ReferenceCounter(copy), _allocator(copy._allocator) {
-            _inner = copy._inner;
-            _n = copy._n;
-            _offset = copy._offset;
+        template <typename ...Args>
+        ptr(const Allocator& allocator, uint64_t n_elems, Args ...args) : _allocator(allocator) {
+            _inner = _allocator.rnew<Type>(n_elems, std::forward<Args>(args)...);
+            _n = n_elems;
+        }
+
+        ptr(const Allocator& allocator) : _allocator(allocator) {
+            _inner = _allocator.rnew<Type>(1);
+            _n = 1;
+        }
+
+        template <typename ...Args>
+        ptr(uint64_t n_elems, Args ...args) {
+            _inner = _allocator.rnew<Type>(n_elems, std::forward<Args>(args)...);
+            _n = n_elems;
+        }
+
+        ptr() {
+            _inner = _allocator.rnew<Type>(1);
+            _n = 1;
         }
 
         ptr<Type> &operator=(const ptr<Type> &rhs) {
@@ -127,12 +139,6 @@ namespace rainman {
             }
         }
     };
-
-    template<class Type, typename ...Args>
-    ptr<Type> make_ptr(Args ...args, const Allocator &allocator = Allocator()) {
-        auto inner = allocator.template rnew<Type>(std::forward<Args>(args)...);
-        return ptr<Type>(inner, 1, allocator);
-    }
 
     /*
      * virtual_array takes a rainman::cache and maps an array to it.

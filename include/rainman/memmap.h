@@ -8,7 +8,9 @@ namespace rainman {
     struct map_elem {
         void *ptr = nullptr;
         uint64_t alloc_size = 0;
+        uint64_t count = 0;
         const char *type_name = nullptr;
+        bool is_raw = false;
         map_elem *next = nullptr;
         map_elem *next_iter = nullptr;
         map_elem *prev_iter = nullptr;
@@ -17,6 +19,22 @@ namespace rainman {
     struct memmap {
     private:
         uint64_t hash(void *ptr);
+
+        template <typename Type>
+        void free_mem(map_elem *elem) {
+            if (elem->is_raw) {
+                Type *objects = reinterpret_cast<Type*>(elem->ptr);
+                auto count = elem->count;
+
+                for (uint64_t i = 0; i < count; i++) {
+                    objects[count - i - 1].~Type();
+                }
+
+                operator delete[](elem->ptr);
+            } else {
+                delete[] static_cast<Type*>(elem->ptr);
+            }
+        }
 
     public:
         uint64_t max_size;
@@ -35,12 +53,8 @@ namespace rainman {
 
         map_elem *get(void *ptr);
 
-#pragma clang diagnostic ignored "-Wdelete-incomplete"
-#pragma GCC diagnostic ignored "-Wdelete-incomplete"
         template<typename Type>
-        void remove_by_type(Type ptr) {
-            delete[] ptr;
-
+        void remove_by_type(Type *ptr) {
             uint64_t ptr_hash = hash((void *) ptr);
             auto curr = mapptr[ptr_hash];
             auto prev = curr;
@@ -53,6 +67,8 @@ namespace rainman {
             if (curr == nullptr) {
                 return;
             }
+
+            free_mem<Type>(curr);
 
             if (prev != curr) {
                 prev->next = curr->next;
