@@ -128,6 +128,12 @@ namespace rainman {
         }
     };
 
+    template<class Type, typename ...Args>
+    ptr<Type> make_ptr(Args ...args, const Allocator &allocator = Allocator()) {
+        auto inner = allocator.template rnew<Type>(std::forward<Args>(args)...);
+        return ptr<Type>(inner, 1, allocator);
+    }
+
     /*
      * virtual_array takes a rainman::cache and maps an array to it.
      * The subscripting operator can only be used for reading purposes.

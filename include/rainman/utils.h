@@ -81,9 +81,9 @@ namespace rainman {
             return _rainman_mgr->r_malloc<Type>(n);
         }
 
-        template<typename Type>
-        Type *rnew() {
-            return _rainman_mgr->r_malloc<Type>(1);
+        template<typename Type, typename ...Args>
+        Type *rnew(Args ...args) {
+            return _rainman_mgr->r_new<Type>(std::forward<Args>(args)...);
         }
 
         template<typename Type>

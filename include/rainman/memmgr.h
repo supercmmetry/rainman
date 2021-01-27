@@ -38,7 +38,7 @@ namespace rainman {
         }
 
         template<typename Type>
-        Type *r_malloc(int n_elems) {
+        Type *r_malloc(uint64_t n_elems) {
             lock();
 
             uint64_t curr_alloc_size = sizeof(Type) * n_elems;
@@ -68,7 +68,7 @@ namespace rainman {
 
             unlock();
 
-            return (Type *) elem->ptr;
+            return static_cast<Type*>(elem->ptr);
         }
 
         template<typename Type>
@@ -92,6 +92,40 @@ namespace rainman {
             }
 
             unlock();
+        }
+
+        template<typename Type, typename ...Args>
+        Type *r_new(Args ...args) {
+            lock();
+
+            uint64_t curr_alloc_size = sizeof(Type);
+
+            if (peak_size != 0 && allocation_size + curr_alloc_size > peak_size) {
+                unlock();
+                throw MemoryErrors::PeakLimitReachedException();
+            }
+
+            if (parent != nullptr &&
+                parent->peak_size != 0 &&
+                parent->get_alloc_size() + curr_alloc_size > parent->get_peak_size()) {
+                unlock();
+                throw MemoryErrors::PeakLimitReachedException();
+            }
+
+            auto elem = new map_elem;
+
+            elem->ptr = new Type(std::forward<Args>(args)...);
+            elem->alloc_size = sizeof(Type);
+            elem->type_name = typeid(Type).name();
+            elem->next = nullptr;
+
+            memmap->add(elem);
+
+            update(allocation_size + elem->alloc_size, n_allocations + 1);
+
+            unlock();
+
+            return static_cast<Type*>(elem->ptr);
         }
 
         void set_peak(uint64_t _peak_size);
