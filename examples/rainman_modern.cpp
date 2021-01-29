@@ -97,12 +97,8 @@ public:
     };
 
     void run() {
-        remove("cache.rain");
-        auto tmp = fopen("cache.rain", "a");
-        fclose(tmp);
-        auto fp = fopen("cache.rain", "rb+");
-        auto cache = rainman::cache(fp, 0x1);
-        auto s = rainman::virtual_array<SomeStruct>(cache, 20);
+        auto cache = rainman::cache("cache.rain", 0x1);
+        auto s = rainman::virtual_array<SomeStruct>(&cache, 20);
         s.set(SomeStruct{10, 20, 12.567, 30}, 0);
 
         std::cout << "s.x = " << s[0].x << " and s.c = " << (int) s[0].c << " and s.d = " << s[0].d << " and s.y = "

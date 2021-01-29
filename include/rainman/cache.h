@@ -10,7 +10,7 @@
 #include "global.h"
 
 namespace rainman {
-    class cache : public ReferenceCounter {
+    class cache {
     private:
         struct cache_fragment {
             uint64_t index;
@@ -22,7 +22,7 @@ namespace rainman {
         uint64_t page_offset{};
         uint8_t *page{};
         uint64_t eof{};
-        std::mutex *mutex{};
+        std::mutex mutex{};
 
         std::vector<cache_fragment> fragments;
         std::unordered_map<uint64_t, uint64_t> lenmap;
@@ -37,15 +37,13 @@ namespace rainman {
 
         cache(FILE *fp, uint64_t size, const Allocator &allocator = Allocator());
 
-        cache(const cache &copy);
+        cache(const std::string &filename, uint64_t size, const Allocator &allocator = Allocator());
 
-        cache &operator=(const cache &rhs);
-
-        template <typename T>
+        template<typename T>
         uint64_t allocate(uint64_t n) {
             uint64_t size = n * sizeof(T);
 
-            mutex->lock();
+            mutex.lock();
 
             bool found_fragment = false;
             uint64_t alloc_index = 0;
@@ -73,53 +71,51 @@ namespace rainman {
             }
 
             lenmap[alloc_index] = size;
-            mutex->unlock();
+            mutex.unlock();
 
             return alloc_index;
         }
 
         void deallocate(uint64_t index) {
-            mutex->lock();
+            mutex.lock();
             fragments.push_back(cache_fragment{
-                .index=index,
-                .length=lenmap[index]
+                    .index=index,
+                    .length=lenmap[index]
             });
 
             lenmap.erase(index);
-            mutex->unlock();
+            mutex.unlock();
         }
 
         // Read an object from the cache at a byte-index.
         // Note: This only works for primitives and 1-byte packed structs.
         template<typename T>
         T read(uint64_t index) {
-            mutex->lock();
+            mutex.lock();
             uint8_t data[sizeof(T)];
             for (uint64_t i = 0; i < sizeof(T); i++) {
                 data[i] = get_byte(index + i);
             }
 
-            mutex->unlock();
-            return *(T*)data;
+            mutex.unlock();
+            return *reinterpret_cast<T *>(data);
         }
 
         // Write an object to the cache at a byte-index.
         // Note: This only works for primitives and 1-byte packed structs.
         template<typename T>
         void write(T obj, uint64_t index) {
-            mutex->lock();
-            auto data = (uint8_t *) &obj;
+            mutex.lock();
+            auto data = reinterpret_cast<uint8_t *>(&obj);
             for (uint64_t i = 0; i < sizeof(T); i++) {
                 set_byte(data[i], index + i);
             }
-            mutex->unlock();
+            mutex.unlock();
         }
 
         ~cache() {
-            if (!refs()) {
-                _allocator.rfree(page);
-                fclose(page_file);
-            }
+            _allocator.rfree(page);
+            fclose(page_file);
         }
     };
 }

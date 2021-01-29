@@ -172,13 +172,13 @@ namespace rainman {
     template<class Type>
     class virtual_array : public ReferenceCounter {
     private:
-        cache _cache{};
+        cache *_cache{};
         uint64_t _index{};
         uint64_t _n{};
     public:
-        virtual_array(const cache &cache, uint64_t n) {
+        virtual_array(cache *cache, uint64_t n) {
             this->_cache = cache;
-            _index = _cache.allocate<Type>(n);
+            _index = _cache->allocate<Type>(n);
             _n = n;
         }
 
@@ -198,20 +198,20 @@ namespace rainman {
         }
 
         Type operator[](uint64_t i) {
-            return _cache.read<Type>(_index + sizeof(Type) * i);
+            return _cache->read<Type>(_index + sizeof(Type) * i);
         }
 
         void set(Type obj, uint64_t i) {
-            _cache.write(obj, _index + sizeof(Type) * i);
+            _cache->write(obj, _index + sizeof(Type) * i);
         }
 
-        uint64_t size() const {
+        [[nodiscard]] uint64_t size() const {
             return _n;
         }
 
         ~virtual_array() {
             if (!refs()) {
-                _cache.deallocate(_index);
+                _cache->deallocate(_index);
             }
         }
     };

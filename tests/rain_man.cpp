@@ -129,7 +129,7 @@ TEST(MemoryTest, rainman_virtual_array_1) {
     auto cache_file = fopen("cache.rain", "rb+");
     auto cache = rainman::cache(cache_file, 0x2000);
 
-    auto arr = rainman::virtual_array<int>(cache, 1048576);
+    auto arr = rainman::virtual_array<int>(&cache, 1048576);
 
     for (int i = 0; i < 1048576; i++) {
         arr.set(i, i);

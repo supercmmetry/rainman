@@ -4,7 +4,6 @@ rainman::cache::cache(FILE *fp, uint64_t size, const Allocator &allocator) : _al
     page_file = fp;
     page_size = size;
     page = _allocator.rmalloc<uint8_t>(size);
-    mutex = new std::mutex;
 }
 
 uint8_t rainman::cache::get_byte(uint64_t index) {
@@ -41,34 +40,12 @@ void rainman::cache::set_byte(uint8_t byte, uint64_t index) {
     }
 }
 
-rainman::cache::cache(const rainman::cache &copy) : ReferenceCounter(copy), _allocator(copy._allocator) {
-    copy.mutex->lock();
-    page_file = copy.page_file;
-    page_size = copy.page_size;
-    page = copy.page;
-    page_offset = copy.page_offset;
-    mutex = copy.mutex;
-    eof = copy.eof;
-    lenmap = copy.lenmap;
-    fragments = copy.fragments;
-    copy.mutex->unlock();
-}
+rainman::cache::cache(const std::string &filename, uint64_t size, const rainman::Allocator &allocator) {
+    remove(filename.c_str());
+    auto tmp = fopen(filename.c_str(), "a");
+    fclose(tmp);
 
-rainman::cache &rainman::cache::operator=(const rainman::cache &rhs) {
-    if (this != &rhs) {
-        rhs.mutex->lock();
-        ReferenceCounter::copy(*this, rhs, true);
-        page_file = rhs.page_file;
-        page_size = rhs.page_size;
-        page = rhs.page;
-        page_offset = rhs.page_offset;
-        mutex = rhs.mutex;
-        eof = rhs.eof;
-        lenmap = rhs.lenmap;
-        fragments = rhs.fragments;
-        _allocator = rhs._allocator;
-        rhs.mutex->unlock();
-    }
-
-    return *this;
+    page_file = fopen(filename.c_str(), "rb+");
+    page_size = size;
+    page = _allocator.rmalloc<uint8_t>(size);
 }
