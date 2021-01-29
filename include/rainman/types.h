@@ -29,6 +29,12 @@ namespace rainman {
             _offset = copy._offset;
         }
 
+        explicit ptr(ptr<Type> *copy) : ReferenceCounter(*copy), _allocator(copy->_allocator) {
+            _inner = copy->_inner;
+            _n = copy->_n;
+            _offset = copy->_offset;
+        }
+
         ptr(Type *inner, uint64_t n_elems, const Allocator &allocator = Allocator()) : _allocator(allocator) {
             _inner = inner;
             _n = n_elems;
@@ -139,6 +145,24 @@ namespace rainman {
             }
         }
     };
+
+    template <typename Type>
+    using ptr2d = ptr<ptr<Type>>;
+
+    template <typename Type, typename ...Args>
+    ptr2d<Type> make_ptr2d(uint64_t rows, uint64_t cols, Args ...args) {
+        auto colptr = ptr<Type>(cols, std::forward<Args>(args)...);
+        return ptr2d<Type>(rows, &colptr);
+    }
+
+    template <typename Type>
+    using ptr3d = ptr<ptr2d<Type>>;
+
+    template <typename Type, typename ...Args>
+    ptr3d<Type> make_ptr3d(uint64_t rows, uint64_t cols, uint64_t depth, Args ...args) {
+        auto inner_ptr = make_ptr2d<Type>(rows, cols, std::forward<Args>(args)...);
+        return ptr3d<Type>(depth, &inner_ptr);
+    }
 
     /*
      * virtual_array takes a rainman::cache and maps an array to it.

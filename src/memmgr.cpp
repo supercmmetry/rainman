@@ -112,7 +112,7 @@ void rainman::memmgr::print_mem_trace() {
     std::cout << std::endl;
     std::cout << "Overall stats: " << std::endl << std::endl;
     std::cout << "Allocation size: " << allocation_size << " bytes" << std::endl;
-    std::cout << "Allocation count: " << n_allocations << std::endl;
+    std::cout << "Allocation count: " << n_allocations << std::endl << std::endl;
 
     unlock();
 }

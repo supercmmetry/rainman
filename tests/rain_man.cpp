@@ -164,3 +164,16 @@ TEST(MemoryTest, rainman_pointer_2) {
     ASSERT_EQ(p[0], 12);
 }
 
+TEST(MemoryTest, rainman_pointer_3) {
+    auto p = rainman::make_ptr2d<int>(20, 20);
+
+    {
+        auto z = rainman::make_ptr3d<int>(10, 3, 3);
+        z[0][0][0] = 13;
+        ASSERT_EQ(z[0][0][0], 13);
+        p[0][1] = 12;
+    }
+
+    ASSERT_EQ(p[0][1], 12);
+}
+

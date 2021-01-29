@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <mutex>
 
 namespace rainman {
     struct map_elem {
@@ -18,6 +19,8 @@ namespace rainman {
 
     struct memmap {
     private:
+        std::mutex mutex;
+
         uint64_t hash(void *ptr);
 
         template <typename Type>
@@ -27,12 +30,16 @@ namespace rainman {
                 auto count = elem->count;
 
                 for (uint64_t i = 0; i < count; i++) {
+                    mutex.unlock();
                     objects[count - i - 1].~Type();
+                    mutex.lock();
                 }
 
                 operator delete[](elem->ptr);
             } else {
+                mutex.unlock();
                 delete[] static_cast<Type*>(elem->ptr);
+                mutex.lock();
             }
         }
 
@@ -56,6 +63,8 @@ namespace rainman {
         template<typename Type>
         void remove_by_type(Type *ptr) {
             uint64_t ptr_hash = hash((void *) ptr);
+
+            mutex.lock();
             auto curr = mapptr[ptr_hash];
             auto prev = curr;
 
@@ -65,6 +74,7 @@ namespace rainman {
             }
 
             if (curr == nullptr) {
+                mutex.unlock();
                 return;
             }
 
@@ -97,6 +107,7 @@ namespace rainman {
             }
 
             delete curr;
+            mutex.unlock();
         }
     };
 }

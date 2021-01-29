@@ -52,6 +52,22 @@ public:
         auto y = rainman::ptr<SomeStruct>();
         auto c = rainman::ptr<SomeClass>(rainman::Allocator(), 4, 1234);
 
+
+        {
+            auto arr2d = rainman::make_ptr2d<int>(10, 10);
+            auto arr3d = rainman::make_ptr3d<int>(10, 10, 10);
+
+            // Initialize objects with args.
+            auto obj_arr2d = rainman::make_ptr2d<SomeClass>(10, 10, 16);
+
+            // arr2d[row-idx][col-idx] = value;
+            arr2d[5][5] = 10;
+
+            // arr3d[depth-idx][row-idx][col-idx] = value;
+            arr3d[5][5][5] = 10;
+        }
+
+
         std::cout << "c[0].x() = " << c[0].x() << std::endl;
 
 
