@@ -76,12 +76,17 @@ public:
 
         std::cout << "s.x = " << s->x << " and s.y = " << (*s).y << std::endl;
 
-        ++s;
+        s += 2;
+        s++;
+        s--;
+
         s->x = 12;
         s->y = 22;
 
         std::cout << "s.x = " << s->x << " and s.y = " << (*s).y << std::endl;
         --s;
+        ++s;
+        s -= 2;
 
         std::cout << "s.x = " << s->x << " and s.y = " << (*s).y << std::endl;
     }

@@ -66,7 +66,7 @@ rainman::cache::cache(const std::string &filename, uint64_t page_size, const All
 }
 
 rainman::cache::~cache() {
-    if(!refs()) {
+    if (!refs()) {
         _allocator.rfree(_inner);
     }
 }

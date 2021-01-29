@@ -75,7 +75,7 @@ namespace rainman {
             return *this;
         }
 
-        ptr<Type> &operator=(const Type &rhs) const {
+        inline ptr<Type> &operator=(const Type &rhs) const {
             if (_n == 0) {
                 throw MemoryErrors::SegmentationFaultException();
             }
@@ -84,7 +84,7 @@ namespace rainman {
             return *this;
         }
 
-        Type &operator[](uint64_t index) const {
+        inline Type &operator[](uint64_t index) const {
             auto idx = index + _offset;
             if (idx >= _n || idx < 0) {
                 throw MemoryErrors::SegmentationFaultException();
@@ -93,7 +93,7 @@ namespace rainman {
             return (_inner + _offset)[index];
         }
 
-        Type &operator*() const {
+        inline Type &operator*() const {
             if (_n == 0) {
                 throw MemoryErrors::SegmentationFaultException();
             }
@@ -101,7 +101,7 @@ namespace rainman {
             return *(_inner + _offset);
         }
 
-        Type *operator->() const {
+        inline Type *operator->() const {
             if (_n == 0) {
                 throw MemoryErrors::SegmentationFaultException();
             }
@@ -109,33 +109,70 @@ namespace rainman {
             return _inner + _offset;
         }
 
-        Type *pointer() const {
+        inline Type *pointer() const {
             return _inner + _offset;
         }
 
-        Type *inner() const {
+        inline Type *inner() const {
             return _inner;
         }
 
-        ptr &operator++() {
+        inline void operator++() {
             if (_offset == _n - 1) {
                 throw MemoryErrors::SegmentationFaultException();
             }
 
             _offset++;
-            return *this;
         }
 
-        ptr &operator--() {
+        inline void operator++(int) {
+            if (_offset == _n - 1) {
+                throw MemoryErrors::SegmentationFaultException();
+            }
+
+            _offset++;
+        }
+
+        inline void operator--() {
             if (_offset == 0) {
                 throw MemoryErrors::SegmentationFaultException();
             }
 
             _offset--;
-            return *this;
         }
 
-        [[nodiscard]] uint64_t size() const {
+        inline void operator--(int) {
+            if (_offset == 0) {
+                throw MemoryErrors::SegmentationFaultException();
+            }
+
+            _offset--;
+        }
+
+        inline void operator+=(int64_t x) {
+            uint64_t idx;
+
+            if (x >= 0) {
+                idx = _offset + (uint64_t)x;
+                if (idx >= _n) {
+                    throw MemoryErrors::SegmentationFaultException();
+                }
+            } else {
+                if (_offset < (uint64_t)(-x)) {
+                    throw MemoryErrors::SegmentationFaultException();
+                }
+
+                idx = _offset - (uint64_t)(-x);
+            }
+
+            _offset = idx;
+        }
+
+        inline void operator-=(int64_t x) {
+            operator+=(-x);
+        }
+
+        [[nodiscard]] inline uint64_t size() const {
             return _n;
         }
 
