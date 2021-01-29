@@ -20,6 +20,7 @@ public:
 
         {
             auto y = rainman::ptr<double>(10);
+            *y = 10;
         }
     }
 };

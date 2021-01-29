@@ -75,15 +75,6 @@ namespace rainman {
             return *this;
         }
 
-        inline ptr<Type> &operator=(const Type &rhs) const {
-            if (_n == 0) {
-                throw MemoryErrors::SegmentationFaultException();
-            }
-
-            *(_inner + _offset) = rhs;
-            return *this;
-        }
-
         inline Type &operator[](uint64_t index) const {
             auto idx = index + _offset;
             if (idx >= _n || idx < 0) {
