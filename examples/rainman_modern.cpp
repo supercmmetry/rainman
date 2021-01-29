@@ -98,9 +98,11 @@ public:
 
     void run() {
         auto cache = rainman::cache("cache.rain", 0x1);
-        auto s = rainman::virtual_array<SomeStruct>(&cache, 20);
-        s.set(SomeStruct{10, 20, 12.567, 30}, 0);
+        auto s = rainman::virtual_array<SomeStruct>(cache, 20);
+        auto t = rainman::virtual_array<SomeStruct>(cache, 20);
 
+        s.set(SomeStruct{10, 20, 12.567, 30}, 0);
+        t = s;
         std::cout << "s.x = " << s[0].x << " and s.c = " << (int) s[0].c << " and s.d = " << s[0].d << " and s.y = "
                   << s[0].y << std::endl;
         std::cout << "size of SomeStruct: " << sizeof(SomeStruct) << " bytes" << std::endl;
@@ -108,10 +110,27 @@ public:
 };
 
 class ModernRainMan5 {
+private:
+    class SomeClass {
+    private:
+        int _x;
+
+    public:
+        SomeClass() = default;
+
+        SomeClass(int x) : _x(x) {};
+
+        [[nodiscard]] int x() const {
+            return _x;
+        }
+
+        ~SomeClass() {
+            std::cout << "SomeClass destroyed." << std::endl;
+        }
+    };
 public:
     void run() {
-        auto data = rainman::ptr<int>(10);
-        auto valid_result = rainman::result<rainman::ptr<int>>::ok(data);
+        auto valid_result = rainman::result<SomeClass>::ok(SomeClass(10));
         auto invalid_result = rainman::result<rainman::ptr<int>>::err("error occured");
 
         if (valid_result.is_ok()) {

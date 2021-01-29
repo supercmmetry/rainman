@@ -170,15 +170,15 @@ namespace rainman {
      * For writing to an index use set().
      */
     template<class Type>
-    class virtual_array : public ReferenceCounter {
+    class virtual_array : private ReferenceCounter {
     private:
-        cache *_cache{};
+        cache _cache;
         uint64_t _index{};
         uint64_t _n{};
     public:
-        virtual_array(cache *cache, uint64_t n) {
+        virtual_array(const cache &cache, uint64_t n) {
             this->_cache = cache;
-            _index = _cache->allocate<Type>(n);
+            _index = _cache.allocate<Type>(n);
             _n = n;
         }
 
@@ -189,7 +189,7 @@ namespace rainman {
 
         virtual_array &operator=(const virtual_array &rhs) {
             if (this != &rhs) {
-                ref_copy(rhs, true);
+                ReferenceCounter::copy(*this, rhs, true);
                 _cache = rhs._cache;
                 _index = rhs._index;
             }
@@ -198,11 +198,11 @@ namespace rainman {
         }
 
         Type operator[](uint64_t i) {
-            return _cache->read<Type>(_index + sizeof(Type) * i);
+            return _cache.read<Type>(_index + sizeof(Type) * i);
         }
 
         void set(Type obj, uint64_t i) {
-            _cache->write(obj, _index + sizeof(Type) * i);
+            _cache.write(obj, _index + sizeof(Type) * i);
         }
 
         [[nodiscard]] uint64_t size() const {
@@ -211,7 +211,7 @@ namespace rainman {
 
         ~virtual_array() {
             if (!refs()) {
-                _cache->deallocate(_index);
+                _cache.deallocate(_index);
             }
         }
     };
