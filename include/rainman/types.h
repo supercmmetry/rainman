@@ -23,7 +23,7 @@ namespace rainman {
         Allocator _allocator{};
 
     public:
-        ptr(ptr<Type> &copy) : ReferenceCounter(copy), _allocator(copy._allocator) {
+        ptr(const ptr<Type> &copy) : ReferenceCounter(copy), _allocator(copy._allocator) {
             _inner = copy._inner;
             _n = copy._n;
             _offset = copy._offset;
