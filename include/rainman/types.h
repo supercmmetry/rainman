@@ -196,7 +196,7 @@ namespace rainman {
     using ptr3d = ptr<ptr2d<Type>>;
 
     template <typename Type, typename ...Args>
-    ptr3d<Type> make_ptr3d(uint64_t rows, uint64_t cols, uint64_t depth, Args ...args) {
+    ptr3d<Type> make_ptr3d(uint64_t depth, uint64_t rows, uint64_t cols, Args ...args) {
         auto inner_ptr = make_ptr2d<Type>(rows, cols, std::forward<Args>(args)...);
         return ptr3d<Type>(depth, &inner_ptr);
     }
