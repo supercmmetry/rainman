@@ -48,10 +48,11 @@ namespace rainman {
 
     class Allocator : private ReferenceCounter {
     private:
+        bool _is_default = true;
         memmgr *_rainman_mgr = &rglobalmgr;
 
         void _destroy() {
-            if (!refs() && _rainman_mgr != &rglobalmgr) {
+            if (!refs() && !_is_default) {
                 delete _rainman_mgr;
             }
         }
@@ -60,16 +61,19 @@ namespace rainman {
         Allocator() = default;
 
         Allocator(memmgr *mgr) {
+            _is_default = false;
             _rainman_mgr = mgr;
         }
 
         Allocator(const Allocator &copy) : ReferenceCounter(copy) {
+            _is_default = copy._is_default;
             _rainman_mgr = copy._rainman_mgr;
         }
 
         Allocator &operator=(const Allocator &rhs) {
             if (this != &rhs) {
                 ReferenceCounter::copy(*this, rhs, true);
+                _is_default = rhs._is_default;
                 _rainman_mgr = rhs._rainman_mgr;
             }
 
