@@ -175,7 +175,9 @@ namespace rainman {
                 if (elem != nullptr) {
                     if (strcmp(typeid(Type).name(), elem->type_name) == 0) {
                         update(allocation_size - elem->alloc_size, n_allocations - 1);
+                        unlock();
                         memmap->remove_by_type<Type *>(reinterpret_cast<Type *>(ptr));
+                        lock();
                     }
                 }
 
