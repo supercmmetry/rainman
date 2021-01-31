@@ -157,11 +157,9 @@ namespace rainman {
 
         memmgr *create_child_mgr();
 
-        // De-allocate everything allocated by the memory manager.
-        // All child memory-managers are wiped in the process.
-        // Note that this does not call the destructor of the allocated objects.
+        // De-allocate everything allocated by the memory manager by type.
         template<typename Type>
-        void wipe(bool wipe_children = true) {
+        void wipe(bool deep_wipe = false) {
             lock();
 
             auto *curr = memmap->head;
@@ -175,10 +173,7 @@ namespace rainman {
 
                 auto *elem = memmap->get((void *) ptr);
                 if (elem != nullptr) {
-                    if (strcmp(typeid(Type).name(), typeid(void).name()) == 0) {
-                        update(allocation_size - elem->alloc_size, n_allocations - 1);
-                        memmap->remove_by_type<void>(ptr);
-                    } else if (strcmp(typeid(Type).name(), elem->type_name) == 0) {
+                    if (strcmp(typeid(Type).name(), elem->type_name) == 0) {
                         update(allocation_size - elem->alloc_size, n_allocations - 1);
                         memmap->remove_by_type<Type *>(reinterpret_cast<Type *>(ptr));
                     }
@@ -189,13 +184,10 @@ namespace rainman {
 
             unlock();
 
-            if (wipe_children) {
+            if (deep_wipe) {
                 for (auto &child : children) {
                     child.first->wipe<Type>();
-                    delete child.first;
                 }
-
-                children.clear();
             }
         }
     };
