@@ -22,7 +22,7 @@ jobs:
 
       - name: Compile tests
         run: |
-          cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang .
+          cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DRAINMAN_DEVEL=ON .
           make rainman_test
 
       - name: Run tests

@@ -2,7 +2,6 @@
 #define RAINMAN_TYPES_H
 
 #include "memmgr.h"
-#include "global.h"
 #include "errors.h"
 #include "cache.h"
 #include "utils.h"

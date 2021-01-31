@@ -3,7 +3,8 @@
 
 #include <cstdint>
 #include <atomic>
-#include "global.h"
+#include <memory>
+#include <rainman/memmgr.h>
 
 namespace rainman {
     class ReferenceCounter {
@@ -48,11 +49,11 @@ namespace rainman {
 
     class Allocator : private ReferenceCounter {
     private:
-        bool _is_default = true;
-        memmgr *_rainman_mgr = &rglobalmgr;
+        static rainman::memmgr _default_mgr;
+        memmgr *_rainman_mgr = &_default_mgr;
 
         void _destroy() {
-            if (!refs() && !_is_default) {
+            if (!refs() && _rainman_mgr != &_default_mgr) {
                 delete _rainman_mgr;
             }
         }
@@ -61,19 +62,16 @@ namespace rainman {
         Allocator() = default;
 
         Allocator(memmgr *mgr) {
-            _is_default = false;
             _rainman_mgr = mgr;
         }
 
         Allocator(const Allocator &copy) : ReferenceCounter(copy) {
-            _is_default = copy._is_default;
             _rainman_mgr = copy._rainman_mgr;
         }
 
         Allocator &operator=(const Allocator &rhs) {
             if (this != &rhs) {
                 ReferenceCounter::copy(*this, rhs, true);
-                _is_default = rhs._is_default;
                 _rainman_mgr = rhs._rainman_mgr;
             }
 

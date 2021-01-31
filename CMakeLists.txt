@@ -7,7 +7,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 add_library(rainman SHARED
         src/memmgr.cpp
         src/memmap.cpp
-        src/cache.cpp)
+        src/cache.cpp src/utils.cpp)
 
 target_include_directories(rainman
         PUBLIC
@@ -16,7 +16,8 @@ target_include_directories(rainman
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-add_subdirectory(examples)
-
-enable_testing()
-add_subdirectory(tests)
+if (${RAINMAN_DEVEL})
+    add_subdirectory(examples)
+    enable_testing()
+    add_subdirectory(tests)
+endif ()

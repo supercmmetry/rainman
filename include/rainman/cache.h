@@ -7,7 +7,6 @@
 #include <vector>
 #include <unordered_map>
 #include "utils.h"
-#include "global.h"
 
 namespace rainman {
     class cache : private ReferenceCounter {
