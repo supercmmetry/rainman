@@ -172,3 +172,39 @@ TEST(MemoryTest, rainman_pointer_3) {
     ASSERT_EQ(p[0][1], 12);
 }
 
+TEST(MemoryTest, rainman_pointer_4) {
+    auto p = rainman::make_ptr2d<int>(20, 20);
+
+    for (int i = 0; i < 20; i++) {
+        for (int j = 0; j < 20; j++) {
+            p[i][j] = 20 * i + j;
+        }
+    }
+
+    for (int i = 0; i < 20; i++) {
+        for (int j = 0; j < 20; j++) {
+            ASSERT_EQ(p[i][j], 20 * i + j);
+        }
+    }
+}
+
+TEST(MemoryTest, rainman_pointer_5) {
+    auto p = rainman::make_ptr3d<int>(20, 20, 20);
+
+    for (int i = 0; i < 20; i++) {
+        for (int j = 0; j < 20; j++) {
+            for (int k = 0; k < 20; k++) {
+                p[i][j][k] = 400 * i + 20 * j + k;
+            }
+        }
+    }
+
+    for (int i = 0; i < 20; i++) {
+        for (int j = 0; j < 20; j++) {
+            for (int k = 0; k < 20; k++) {
+                ASSERT_EQ(p[i][j][k], 400 * i + 20 * j + k);
+            }
+        }
+    }
+}
+

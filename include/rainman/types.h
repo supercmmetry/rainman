@@ -28,29 +28,23 @@ namespace rainman {
             _offset = copy._offset;
         }
 
-        explicit ptr(ptr<Type> *copy) : ReferenceCounter(*copy), _allocator(copy->_allocator) {
-            _inner = copy->_inner;
-            _n = copy->_n;
-            _offset = copy->_offset;
-        }
-
         ptr(Type *inner, uint64_t n_elems, const Allocator &allocator = Allocator()) : _allocator(allocator) {
             _inner = inner;
             _n = n_elems;
         }
 
-        template <typename ...Args>
-        ptr(const Allocator& allocator, uint64_t n_elems, Args ...args) : _allocator(allocator) {
+        template<typename ...Args>
+        ptr(const Allocator &allocator, uint64_t n_elems, Args ...args) : _allocator(allocator) {
             _inner = _allocator.rnew<Type>(n_elems, std::forward<Args>(args)...);
             _n = n_elems;
         }
 
-        ptr(const Allocator& allocator) : _allocator(allocator) {
+        ptr(const Allocator &allocator) : _allocator(allocator) {
             _inner = _allocator.rnew<Type>(1);
             _n = 1;
         }
 
-        template <typename ...Args>
+        template<typename ...Args>
         ptr(uint64_t n_elems, Args ...args) {
             _inner = _allocator.rnew<Type>(n_elems, std::forward<Args>(args)...);
             _n = n_elems;
@@ -143,16 +137,16 @@ namespace rainman {
             uint64_t idx;
 
             if (x >= 0) {
-                idx = _offset + (uint64_t)x;
+                idx = _offset + (uint64_t) x;
                 if (idx >= _n) {
                     throw MemoryErrors::SegmentationFaultException();
                 }
             } else {
-                if (_offset < (uint64_t)(-x)) {
+                if (_offset < (uint64_t) (-x)) {
                     throw MemoryErrors::SegmentationFaultException();
                 }
 
-                idx = _offset - (uint64_t)(-x);
+                idx = _offset - (uint64_t) (-x);
             }
 
             _offset = idx;
@@ -173,22 +167,20 @@ namespace rainman {
         }
     };
 
-    template <typename Type>
+    template<typename Type>
     using ptr2d = ptr<ptr<Type>>;
 
-    template <typename Type, typename ...Args>
-    ptr2d<Type> make_ptr2d(uint64_t rows, uint64_t cols, Args ...args) {
-        auto colptr = ptr<Type>(cols, std::forward<Args>(args)...);
-        return ptr2d<Type>(rows, &colptr);
+    template<typename Type, typename ...Args>
+    inline ptr2d<Type> make_ptr2d(uint64_t rows, uint64_t cols, Args ...args) {
+        return ptr2d<Type>(rows, cols, std::forward<Args>(args)...);
     }
 
-    template <typename Type>
+    template<typename Type>
     using ptr3d = ptr<ptr2d<Type>>;
 
-    template <typename Type, typename ...Args>
-    ptr3d<Type> make_ptr3d(uint64_t depth, uint64_t rows, uint64_t cols, Args ...args) {
-        auto inner_ptr = make_ptr2d<Type>(rows, cols, std::forward<Args>(args)...);
-        return ptr3d<Type>(depth, &inner_ptr);
+    template<typename Type, typename ...Args>
+    inline ptr3d<Type> make_ptr3d(uint64_t depth, uint64_t rows, uint64_t cols, Args ...args) {
+        return ptr3d<Type>(depth, rows, cols, std::forward<Args>(args)...);
     }
 
     /*
