@@ -19,7 +19,7 @@ namespace rainman {
 
     struct memmap {
     private:
-        std::mutex mutex;
+        std::mutex _mutex;
 
         uint64_t hash(void *ptr);
 
@@ -30,16 +30,16 @@ namespace rainman {
                 auto count = elem->count;
 
                 for (uint64_t i = 0; i < count; i++) {
-                    mutex.unlock();
+                    _mutex.unlock();
                     objects[count - i - 1].~Type();
-                    mutex.lock();
+                    _mutex.lock();
                 }
 
                 operator delete[](elem->ptr);
             } else {
-                mutex.unlock();
+                _mutex.unlock();
                 delete[] static_cast<Type*>(elem->ptr);
-                mutex.lock();
+                _mutex.lock();
             }
         }
 
@@ -64,7 +64,7 @@ namespace rainman {
         void remove_by_type(Type *ptr) {
             uint64_t ptr_hash = hash((void *) ptr);
 
-            mutex.lock();
+            _mutex.lock();
             auto curr = mapptr[ptr_hash];
             auto prev = curr;
 
@@ -74,7 +74,7 @@ namespace rainman {
             }
 
             if (curr == nullptr) {
-                mutex.unlock();
+                _mutex.unlock();
                 return;
             }
 
@@ -107,7 +107,7 @@ namespace rainman {
             }
 
             delete curr;
-            mutex.unlock();
+            _mutex.unlock();
         }
     };
 }

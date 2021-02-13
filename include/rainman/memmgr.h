@@ -14,13 +14,13 @@
 namespace rainman {
     class memmgr {
     private:
-        uint64_t allocation_size{};
-        uint64_t n_allocations{};
-        uint64_t peak_size{};
-        memmap *memmap{};
-        memmgr *parent{};
-        std::unordered_map<memmgr *, bool> children{};
-        std::mutex mutex{};
+        uint64_t _allocation_size{};
+        uint64_t _n_allocations{};
+        uint64_t _peak_size{};
+        memmap *_memmap{};
+        memmgr *_parent{};
+        std::unordered_map<memmgr *, bool> _children{};
+        std::mutex _mutex{};
 
         void lock();
 
@@ -33,7 +33,7 @@ namespace rainman {
 
         ~memmgr() {
             lock();
-            delete memmap;
+            delete _memmap;
             unlock();
         }
 
@@ -43,14 +43,14 @@ namespace rainman {
 
             uint64_t curr_alloc_size = sizeof(Type) * n_elems;
 
-            if (peak_size != 0 && allocation_size + curr_alloc_size > peak_size) {
+            if (_peak_size != 0 && _allocation_size + curr_alloc_size > _peak_size) {
                 unlock();
                 throw MemoryErrors::PeakLimitReachedException();
             }
 
-            if (parent != nullptr &&
-                parent->peak_size != 0 &&
-                parent->get_alloc_size() + curr_alloc_size > parent->get_peak_size()) {
+            if (_parent != nullptr &&
+                _parent->_peak_size != 0 &&
+                _parent->get_alloc_size() + curr_alloc_size > _parent->get_peak_size()) {
                 unlock();
                 throw MemoryErrors::PeakLimitReachedException();
             }
@@ -63,9 +63,9 @@ namespace rainman {
             elem->type_name = typeid(Type).name();
             elem->next = nullptr;
 
-            memmap->add(elem);
+            _memmap->add(elem);
 
-            update(allocation_size + elem->alloc_size, n_allocations + 1);
+            update(_allocation_size + elem->alloc_size, _n_allocations + 1);
 
             unlock();
 
@@ -80,15 +80,15 @@ namespace rainman {
 
             lock();
 
-            auto *elem = memmap->get((void *) ptr);
+            auto *elem = _memmap->get((void *) ptr);
             if (elem != nullptr) {
-                update(allocation_size - elem->alloc_size, n_allocations - 1);
+                update(_allocation_size - elem->alloc_size, _n_allocations - 1);
                 unlock();
-                memmap->remove_by_type<Type>(ptr);
+                _memmap->remove_by_type<Type>(ptr);
                 lock();
             } else {
                 unlock();
-                for (auto child : children) {
+                for (auto child : _children) {
                     child.first->r_free(ptr);
                 }
                 lock();
@@ -103,14 +103,14 @@ namespace rainman {
 
             uint64_t curr_alloc_size = sizeof(Type) * n_elems;
 
-            if (peak_size != 0 && allocation_size + curr_alloc_size > peak_size) {
+            if (_peak_size != 0 && _allocation_size + curr_alloc_size > _peak_size) {
                 unlock();
                 throw MemoryErrors::PeakLimitReachedException();
             }
 
-            if (parent != nullptr &&
-                parent->peak_size != 0 &&
-                parent->get_alloc_size() + curr_alloc_size > parent->get_peak_size()) {
+            if (_parent != nullptr &&
+                _parent->_peak_size != 0 &&
+                _parent->get_alloc_size() + curr_alloc_size > _parent->get_peak_size()) {
                 unlock();
                 throw MemoryErrors::PeakLimitReachedException();
             }
@@ -124,9 +124,9 @@ namespace rainman {
             elem->next = nullptr;
             elem->is_raw = true;
 
-            memmap->add(elem);
+            _memmap->add(elem);
 
-            update(allocation_size + elem->alloc_size, n_allocations + 1);
+            update(_allocation_size + elem->alloc_size, _n_allocations + 1);
 
             unlock();
 
@@ -162,7 +162,7 @@ namespace rainman {
         void wipe(bool deep_wipe = false) {
             lock();
 
-            auto *curr = memmap->head;
+            auto *curr = _memmap->head;
             while (curr != nullptr) {
                 auto next = curr->next_iter;
                 auto ptr = curr->ptr;
@@ -171,12 +171,12 @@ namespace rainman {
                     continue;
                 }
 
-                auto *elem = memmap->get((void *) ptr);
+                auto *elem = _memmap->get((void *) ptr);
                 if (elem != nullptr) {
                     if (strcmp(typeid(Type).name(), elem->type_name) == 0) {
-                        update(allocation_size - elem->alloc_size, n_allocations - 1);
+                        update(_allocation_size - elem->alloc_size, _n_allocations - 1);
                         unlock();
-                        memmap->remove_by_type<Type *>(reinterpret_cast<Type *>(ptr));
+                        _memmap->remove_by_type<Type *>(reinterpret_cast<Type *>(ptr));
                         lock();
                     }
                 }
@@ -187,7 +187,7 @@ namespace rainman {
             unlock();
 
             if (deep_wipe) {
-                for (auto &child : children) {
+                for (auto &child : _children) {
                     child.first->wipe<Type>();
                 }
             }

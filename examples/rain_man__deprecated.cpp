@@ -52,7 +52,7 @@ public:
  * De-allocate everything that was allocated in each thread.
  *
  * NOTE: If you intend to wipe a memory manager, make sure that the threads using
- * the memory manager or it's children have completed their execution, otherwise this
+ * the memory manager or it's _children have completed their execution, otherwise this
  * might lead to undefined behaviour.
  * Furthermore, the wipe() method does not call the destructor of allocated objects. This
  * will not lead to memory leaks if all allocations in the objects are done through rainman.
@@ -124,7 +124,7 @@ public:
                         rinitptrfrom(child_mgr, obj);
 
                         // Now all allocations done under SubClass are handled by the child memory manager.
-                        // All allocation updates in child_mgr are propagated to it's parent memory manager.
+                        // All allocation updates in child_mgr are propagated to it's _parent memory manager.
 
                         obj->run();
 
@@ -141,7 +141,7 @@ public:
             delete thread;
         }
 
-        // Now, we view the allocations under the parent memory manager i.e. (rmemmgr).
+        // Now, we view the allocations under the _parent memory manager i.e. (rmemmgr).
         std::cout << "Allocation size in bytes: " << rmemmgr->get_alloc_size() << std::endl;
         std::cout << "Allocation count        : " << rmemmgr->get_alloc_count() << std::endl;
 

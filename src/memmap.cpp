@@ -13,7 +13,7 @@ rainman::memmap::memmap(uint64_t size) {
 }
 
 void rainman::memmap::add(map_elem *elem) {
-    mutex.lock();
+    _mutex.lock();
     uint64_t ptr_hash = hash(elem->ptr);
     elem->next = mapptr[ptr_hash];
     mapptr[ptr_hash] = elem;
@@ -29,13 +29,13 @@ void rainman::memmap::add(map_elem *elem) {
         iterptr = iterptr->next_iter;
         iterptr->next_iter = nullptr;
     }
-    mutex.unlock();
+    _mutex.unlock();
 }
 
 rainman::map_elem *rainman::memmap::get(void *ptr) {
     uint64_t ptr_hash = hash(ptr);
 
-    mutex.lock();
+    _mutex.lock();
     auto curr = mapptr[ptr_hash];
 
     while (curr != nullptr && curr->ptr != ptr) {
@@ -43,11 +43,11 @@ rainman::map_elem *rainman::memmap::get(void *ptr) {
     }
 
     if (curr != nullptr && curr->ptr != ptr) {
-        mutex.unlock();
+        _mutex.unlock();
         return nullptr;
     }
 
-    mutex.unlock();
+    _mutex.unlock();
     return curr;
 }
 
