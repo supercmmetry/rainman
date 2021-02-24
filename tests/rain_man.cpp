@@ -124,13 +124,13 @@ TEST(MemoryTest, rainman_cache_5) {
 TEST(MemoryTest, rainman_virtual_array_1) {
     auto cache = rainman::cache("cache.rain", 0x2000);
 
-    auto arr = rainman::virtual_array<int>(cache, 1048576);
+    auto arr = rainman::virtual_array<int>(cache, 10485760);
 
-    for (int i = 0; i < 1048576; i++) {
+    for (int i = 0; i < 10485760; i++) {
         arr.set(i, i);
     }
 
-    for (int i = 0; i < 1048576; i++) {
+    for (int i = 0; i < 10485760; i++) {
         ASSERT_EQ(arr[i], i);
     }
 }

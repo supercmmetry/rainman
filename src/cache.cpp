@@ -71,7 +71,7 @@ rainman::cache::~cache() {
     }
 }
 
-rainman::cache::cache(rainman::cache &copy) : ReferenceCounter(copy) {
+rainman::cache::cache(const rainman::cache &copy) : ReferenceCounter(copy) {
     _inner = copy._inner;
     _allocator = copy._allocator;
 }

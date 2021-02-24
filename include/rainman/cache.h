@@ -126,7 +126,7 @@ namespace rainman {
 
         cache(const std::string &filename, uint64_t page_size, const Allocator &allocator = Allocator());
 
-        cache(cache &copy);
+        cache(const cache &copy);
 
         cache &operator=(const cache &rhs);
 
