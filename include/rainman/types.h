@@ -204,6 +204,7 @@ namespace rainman {
         virtual_array(const virtual_array &copy) : ReferenceCounter(copy) {
             _cache = copy._cache;
             _index = copy._index;
+            _n = copy._n;
         }
 
         virtual_array &operator=(const virtual_array &rhs) {
@@ -211,6 +212,7 @@ namespace rainman {
                 ReferenceCounter::copy(*this, rhs, true);
                 _cache = rhs._cache;
                 _index = rhs._index;
+                _n = rhs._n;
             }
 
             return *this;
