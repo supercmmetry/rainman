@@ -7,7 +7,7 @@ class MemoryTest : public testing::Test {
 
 TEST(MemoryTest, rain_man_segv) {
     auto memmgr = new rainman::memmgr;
-    std::vector<int*> ptr_vec;
+    std::vector<int *> ptr_vec;
     int *x = memmgr->r_malloc<int>(2000);
 
     for (int i = 0; i < 2000; i++) {
@@ -132,6 +132,25 @@ TEST(MemoryTest, rainman_virtual_array_1) {
 
     for (int i = 0; i < 10485760; i++) {
         ASSERT_EQ(arr[i], i);
+    }
+}
+
+TEST(MemoryTest, rainman_virtual_array_2) {
+    auto cache = rainman::cache("cache.rain", 0x2000);
+    struct sample {
+        uint32_t x;
+        uint32_t y;
+    };
+
+    auto arr = rainman::virtual_array<sample>(cache, 10485760);
+
+    for (uint32_t i = 0; i < 10485760; i++) {
+        arr.set(sample{.x=i, .y=i * 2}, i);
+    }
+
+    for (int i = 0; i < 10485760; i++) {
+        ASSERT_EQ(arr[i].x, i);
+        ASSERT_EQ(arr[i].y, i * 2);
     }
 }
 
