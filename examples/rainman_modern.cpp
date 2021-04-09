@@ -90,6 +90,10 @@ public:
         s -= 2;
 
         std::cout << "s.x = " << s->x << " and s.y = " << (*s).y << std::endl;
+
+        s = s + 2;
+
+        std::cout << "s.x = " << s->x << " and s.y = " << (*s).y << std::endl;
     }
 };
 

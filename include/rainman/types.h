@@ -58,7 +58,9 @@ namespace rainman {
         ptr<Type> &operator=(const ptr<Type> &rhs) {
             if (this != &rhs) {
                 ReferenceCounter::copy(*this, rhs, true);
-                _allocator.rfree(_inner);
+                if (!refs()) {
+                    _allocator.rfree(_inner);
+                }
                 _inner = rhs._inner;
                 _n = rhs._n;
                 _offset = rhs._offset;
@@ -91,6 +93,36 @@ namespace rainman {
             }
 
             return _inner + _offset;
+        }
+
+        inline ptr<Type> operator+(int64_t x) {
+            uint64_t idx;
+
+            if (x >= 0) {
+                idx = _offset + (uint64_t) x;
+                if (idx >= _n) {
+                    throw MemoryErrors::SegmentationFaultException();
+                }
+            } else {
+                if (_offset < (uint64_t) (-x)) {
+                    throw MemoryErrors::SegmentationFaultException();
+                }
+
+                idx = _offset - (uint64_t) (-x);
+            }
+
+            ptr<Type> new_ptr;
+            ReferenceCounter::copy(*this, new_ptr, false);
+            new_ptr._inner = _inner;
+            new_ptr._allocator = _allocator;
+            new_ptr._n = _n;
+            new_ptr._offset = idx;
+
+            return new_ptr;
+        }
+
+        inline ptr<Type> operator-(int64_t x) {
+            return operator+(-x);
         }
 
         inline Type *pointer() const {
